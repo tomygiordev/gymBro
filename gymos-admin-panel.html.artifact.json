@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "GymOS — Panel de Administración de Gimnasio",
+  "entry": "gymos-admin-panel.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-05-01T04:02:13.691Z",
+  "updatedAt": "2026-05-01T04:02:13.745Z",
+  "sourceSkillId": "blog-post",
+  "designSystemId": "airtable",
+  "metadata": {
+    "identifier": "gymos-admin-panel",
+    "inferred": false
+  }
+}

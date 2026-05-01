@@ -85,6 +85,31 @@ export class MembershipsRepository {
     return (result[0] as any) || null;
   }
 
+  async findLatestByMemberId(memberId: string): Promise<MembershipWithPlan | null> {
+    const result = await this.db
+      .select({
+        id: membershipsTable.id,
+        memberId: membershipsTable.memberId,
+        planId: membershipsTable.planId,
+        tenantId: membershipsTable.tenantId,
+        status: membershipsTable.status,
+        startDate: membershipsTable.startDate,
+        endDate: membershipsTable.endDate,
+        frozeAt: membershipsTable.frozeAt,
+        frozeUntil: membershipsTable.frozeUntil,
+        autoRenew: membershipsTable.autoRenew,
+        planName: plansTable.name,
+        planPrice: plansTable.priceMonthly,
+      })
+      .from(membershipsTable)
+      .innerJoin(plansTable, eq(membershipsTable.planId, plansTable.id))
+      .where(eq(membershipsTable.memberId, memberId))
+      .orderBy(desc(membershipsTable.startDate))
+      .limit(1);
+
+    return (result[0] as any) || null;
+  }
+
   async findByMemberId(memberId: string): Promise<Membership[]> {
     return this.db
       .select()
@@ -198,15 +223,17 @@ export class MembershipsRepository {
   }
 
   async getStatus(membership: MembershipWithPlan): Promise<'active' | 'warning' | 'expired' | 'frozen'> {
+    const endDate = new Date(membership.endDate);
+
     if (membership.status === MEMBERSHIP_STATUS.FROZEN) {
       return MEMBERSHIP_STATUS.FROZEN;
     }
 
-    if (isDateExpired(membership.endDate)) {
+    if (isDateExpired(endDate)) {
       return MEMBERSHIP_STATUS.EXPIRED;
     }
 
-    if (isWithinDays(membership.endDate, MEMBERSHIP_WARNING_DAYS)) {
+    if (isWithinDays(endDate, MEMBERSHIP_WARNING_DAYS)) {
       return MEMBERSHIP_STATUS.WARNING;
     }
 

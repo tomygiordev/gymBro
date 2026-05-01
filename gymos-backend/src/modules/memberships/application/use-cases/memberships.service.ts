@@ -19,7 +19,7 @@ export class MembershipsService {
   ) {}
 
   async getActiveMembership(memberId: string) {
-    const membership = await this.membershipsRepository.findActiveByMemberId(memberId);
+    const membership = await this.membershipsRepository.findLatestByMemberId(memberId);
     if (!membership) return null;
 
     const status = await this.membershipsRepository.getStatus(membership);

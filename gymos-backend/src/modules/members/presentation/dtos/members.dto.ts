@@ -67,6 +67,10 @@ export class MemberListItemDto {
   phone: string | null;
   isActive: boolean;
   createdAt: Date;
+  membershipStatus?: 'active' | 'warning' | 'expired' | 'frozen' | 'none';
+  membershipPlanName?: string | null;
+  membershipEndDate?: Date | null;
+  lastCheckinAt?: Date | null;
 }
 
 export class MemberMembershipSummaryDto {
@@ -93,6 +97,7 @@ export class MemberDetailDto {
   photoUrl: string | null;
   isActive: boolean;
   createdAt: Date;
+  lastCheckinAt?: Date | null;
   membership: MemberMembershipSummaryDto | null;
 }
 

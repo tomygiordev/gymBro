@@ -310,6 +310,19 @@
     .settings-nav-item{padding:10px 14px;border-radius:var(--radius);font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:background .12s,color .12s}
     .settings-nav-item:hover{background:var(--bg);color:var(--fg)}
     .settings-nav-item.active{background:var(--accent-light);color:var(--accent)}
+    .stack{display:flex;flex-direction:column;gap:16px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .inline-hint{font-size:12px;color:var(--muted);margin-top:2px}
+    .textarea{min-height:120px;resize:vertical}
+    .modal-panel{width:min(720px,92vw)}
+    .modal-panel.compact{width:min(560px,92vw)}
+    .modal-subtitle{font-size:13px;color:var(--muted);margin:4px 0 0}
+    .member-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .member-form-grid .field.full{grid-column:1 / -1}
+    .recipient-pills{display:flex;flex-wrap:wrap;gap:8px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:600}
+    .empty-note{padding:14px 16px;border:1px dashed var(--border);border-radius:var(--radius);background:var(--bg);color:var(--muted);font-size:13px}
+    .class-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .settings-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px}
     .settings-section-title{font-size:16px;font-weight:700;margin:0 0 20px}
     .settings-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}
@@ -353,8 +366,12 @@
     .toast-container{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px}
     .toast{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.12);animation:toastIn .2s ease;min-width:240px}
     .toast.success{background:var(--success-bg);color:var(--success);border:1px solid var(--success)}
+    .toast.warning{background:var(--warning-bg);color:var(--warning);border:1px solid var(--warning)}
     .toast.error{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger)}
     @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @media (max-width: 900px){
+      .member-form-grid,.grid-2,.class-edit-grid{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
@@ -438,11 +455,11 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-row">
-        <div class="avatar">MG</div>
+      <div class="user-row" id="sidebar-user-row" title="Cerrar sesión">
+        <div class="avatar" id="sidebar-user-avatar">MG</div>
         <div class="user-info">
-          <div class="name">María García</div>
-          <div class="role">Gerente</div>
+          <div class="name" id="sidebar-user-name">María García</div>
+          <div class="role" id="sidebar-user-role">Gerente</div>
         </div>
       </div>
     </div>
@@ -452,7 +469,7 @@
     <header class="topbar">
       <div class="topbar-left"><span class="topbar-title" id="topbar-title">Dashboard</span></div>
       <div class="topbar-right">
-        <div class="topbar-search">
+        <div class="topbar-search" id="topbar-member-search">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
           Buscar socio…
         </div>
@@ -466,29 +483,29 @@
     <div id="screen-dashboard" class="screen active">
       <div class="page-content">
         <div class="greeting">
-          <h1>Buenos días, María</h1>
-          <p>Lunes, 15 de enero de 2026 · Sucursal Centro</p>
+          <h1 id="greeting-title">Buenos días, María</h1>
+          <p id="greeting-subtitle">Lunes, 15 de enero de 2026 · Sucursal Centro</p>
         </div>
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-label">Ingresos del mes</div>
-            <div class="kpi-value mono">$4.23M</div>
-            <div class="kpi-delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+12.4% vs mes anterior</div>
+            <div class="kpi-value mono" id="kpi-revenue-value">$4.23M</div>
+            <div class="kpi-delta up" id="kpi-revenue-delta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+12.4% vs mes anterior</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Socios activos</div>
-            <div class="kpi-value mono">2.840</div>
-            <div class="kpi-delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+38 nuevos esta semana</div>
+            <div class="kpi-value mono" id="kpi-members-value">2.840</div>
+            <div class="kpi-delta up" id="kpi-members-delta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+38 nuevos esta semana</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Retención mensual</div>
-            <div class="kpi-value mono">98.4%</div>
-            <div class="kpi-delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+0.8pp vs mes anterior</div>
+            <div class="kpi-value mono" id="kpi-retention-value">98.4%</div>
+            <div class="kpi-delta up" id="kpi-retention-delta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+0.8pp vs mes anterior</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Ocupación promedio</div>
-            <div class="kpi-value mono">74%</div>
-            <div class="kpi-delta down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>-3% vs semana anterior</div>
+            <div class="kpi-value mono" id="kpi-occupancy-value">74%</div>
+            <div class="kpi-delta down" id="kpi-occupancy-delta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>-3% vs semana anterior</div>
           </div>
         </div>
         <div class="chart-row">
@@ -505,17 +522,17 @@
             <div class="card-header"><span class="card-title">Alertas y acciones</span></div>
             <div class="card-body">
               <div class="alert-list">
-                <div class="alert-item">
+                <div class="alert-item" id="alert-debtors">
                   <div class="alert-icon danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
                   <div class="alert-info"><div class="alert-title">Socios con deuda</div><div class="alert-sub">12 socios · $890.000 total</div></div>
                   <span class="alert-action">Contactar →</span>
                 </div>
-                <div class="alert-item">
+                <div class="alert-item" id="alert-renewals">
                   <div class="alert-icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
                   <div class="alert-info"><div class="alert-title">Próximas renovaciones</div><div class="alert-sub">8 vencen en 3 días</div></div>
                   <span class="alert-action">Renovar →</span>
                 </div>
-                <div class="alert-item">
+                <div class="alert-item" id="alert-birthdays">
                   <div class="alert-icon info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
                   <div class="alert-info"><div class="alert-title">Cumpleaños hoy</div><div class="alert-sub">3 socios cumplen años</div></div>
                   <span class="alert-action">Ver →</span>
@@ -525,11 +542,11 @@
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><span class="card-title">Actividad de hoy · 15 de enero</span><button class="btn btn-ghost btn-sm">Ver todo →</button></div>
+          <div class="card-header"><span class="card-title">Actividad de hoy · 15 de enero</span><button class="btn btn-ghost btn-sm" id="dashboard-view-all-btn">Ver todo →</button></div>
           <div class="card-body" style="padding:0">
             <table class="members-table" style="border-radius:0;border:none">
               <thead><tr><th>Hora</th><th>Socio</th><th>Tipo</th><th>Estado</th></tr></thead>
-              <tbody>
+              <tbody id="dashboard-activity-body">
                 <tr><td style="font-family:var(--font-mono);font-size:12px">07:42</td><td><div class="member-cell"><div class="avatar sm muted">FC</div><span class="member-name">Fernando Costas</span></div></td><td>Spinning 8:00</td><td><span class="badge badge-active">● Check-in</span></td></tr>
                 <tr><td style="font-family:var(--font-mono);font-size:12px">07:58</td><td><div class="member-cell"><div class="avatar sm">LR</div><span class="member-name">Laura Rodríguez</span></div></td><td>Yoga 9:00</td><td><span class="badge badge-warning">● Por vencer</span></td></tr>
                 <tr><td style="font-family:var(--font-mono);font-size:12px">08:03</td><td><div class="member-cell"><div class="avatar sm muted">PM</div><span class="member-name">Pablo Mansilla</span></div></td><td>Acceso libre</td><td><span class="badge badge-active">● Check-in</span></td></tr>
@@ -547,9 +564,9 @@
         <div class="page-header">
           <h1>Socios</h1>
           <div class="page-header-right">
-            <span class="result-count">247 socios</span>
-            <button class="btn btn-secondary btn-sm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar</button>
-            <button class="btn btn-primary btn-sm">+ Nuevo socio</button>
+            <span class="result-count" id="members-result-count">247 socios</span>
+            <button class="btn btn-secondary btn-sm" id="members-export-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar</button>
+            <button class="btn btn-primary btn-sm" id="new-member-btn">+ Nuevo socio</button>
           </div>
         </div>
         <div class="search-bar" style="margin-bottom:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" placeholder="Buscar por nombre, email o teléfono…" id="member-search" /></div>
@@ -596,7 +613,7 @@
     <div id="screen-memberships" class="screen">
       <div class="page-content">
         <div class="page-header"><h1>Membresías y planes</h1><button class="btn btn-primary btn-sm" onclick="showWizard()">+ Nueva membresía</button></div>
-        <div class="plans-grid">
+        <div class="plans-grid" id="plans-grid">
           <div class="plan-card">
             <div class="plan-name">Básico</div>
             <div class="plan-price">$29.900<span>/mes</span></div>
@@ -644,22 +661,24 @@
             <div id="wizard-step-1">
               <h3 style="margin:0 0 4px;font-size:16px;font-weight:700">Seleccionar socio</h3>
               <p style="color:var(--muted);font-size:13px;margin:0 0 20px">Buscá el socio al que querés asignar la membresía.</p>
-              <div class="search-bar" style="margin-bottom:16px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" placeholder="Nombre o documento…" /></div>
+              <div class="search-bar" style="margin-bottom:16px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" placeholder="Nombre o documento…" id="wizard-member-search" /></div>
+              <div id="wizard-member-results">
               <div class="alert-item" style="cursor:pointer">
                 <div class="alert-icon info" style="width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg></div>
                 <div class="alert-info"><div class="alert-title">Fernando Costas</div><div class="alert-sub">fernando.costas@gmail.com · Premium (activa)</div></div>
+              </div>
               </div>
             </div>
             <div id="wizard-step-2" style="display:none">
               <h3 style="margin:0 0 4px;font-size:16px;font-weight:700">Elegir plan</h3>
               <p style="color:var(--muted);font-size:13px;margin:0 0 20px">Seleccioná el plan para esta membresía.</p>
-              <div class="plan-cards-row">
+              <div class="plan-cards-row" id="wizard-plan-options">
                 <div class="plan-select-card" onclick="selectPlan(this,'Básico',29900)"><div style="font-weight:700;margin-bottom:4px">Básico</div><div style="font-size:20px;font-weight:700">$29.900<small>/mes</small></div></div>
                 <div class="plan-select-card selected" onclick="selectPlan(this,'Premium',49900)"><div style="font-weight:700;margin-bottom:4px">Premium</div><div style="font-size:20px;font-weight:700">$49.900<small>/mes</small></div></div>
                 <div class="plan-select-card" onclick="selectPlan(this,'VIP',79900)"><div style="font-weight:700;margin-bottom:4px">VIP</div><div style="font-size:20px;font-weight:700">$79.900<small>/mes</small></div></div>
               </div>
               <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                <div class="field"><label>Fecha de inicio</label><input class="input" type="date" value="2026-01-15" /></div>
+                <div class="field"><label>Fecha de inicio</label><input class="input" type="date" value="2026-01-15" id="wizard-start-date" /></div>
                 <div class="field"><label>Duración</label><select class="input"><option>1 mes</option><option selected>3 meses</option><option>6 meses</option><option>1 año</option></select></div>
               </div>
             </div>
@@ -667,13 +686,13 @@
               <h3 style="margin:0 0 4px;font-size:16px;font-weight:700">Resumen</h3>
               <p style="color:var(--muted);font-size:13px;margin:0 0 20px">Revisá los detalles antes de confirmar.</p>
               <div class="summary-card">
-                <div class="summary-row"><span>Socio</span><span>Fernando Costas</span></div>
-                <div class="summary-row"><span>Plan</span><span>Premium</span></div>
-                <div class="summary-row"><span>Fecha de inicio</span><span>15/ene/2026</span></div>
-                <div class="summary-row"><span>Fecha de fin</span><span>15/abr/2026</span></div>
-                <div class="summary-row"><span>Precio mensual</span><span>$49.900</span></div>
+                <div class="summary-row"><span>Socio</span><span id="wizard-summary-member">Fernando Costas</span></div>
+                <div class="summary-row"><span>Plan</span><span id="wizard-summary-plan">Premium</span></div>
+                <div class="summary-row"><span>Fecha de inicio</span><span id="wizard-summary-start">15/ene/2026</span></div>
+                <div class="summary-row"><span>Fecha de fin</span><span id="wizard-summary-end">15/abr/2026</span></div>
+                <div class="summary-row"><span>Precio mensual</span><span id="wizard-summary-price">$49.900</span></div>
                 <div class="summary-row"><span>Método de pago</span><span>Débito automático</span></div>
-                <div class="summary-row total"><span>Total</span><span>$149.700</span></div>
+                <div class="summary-row total"><span>Total</span><span id="wizard-summary-total">$149.700</span></div>
               </div>
               <label class="checkbox-row" style="margin-top:16px"><input type="checkbox" checked /><span>Enviar confirmación por email al socio</span></label>
             </div>
@@ -781,11 +800,11 @@
               </div>
               <div class="class-panel-section">
                 <div class="class-panel-label">Lista de espera (3)</div>
-                <div class="waitlist-item"><span class="waitlist-pos">#1</span><div class="avatar sm muted">MG</div><span class="waitlist-name">Martín González</span><div class="waitlist-actions"><button class="btn btn-success btn-sm" onclick="promoteFromWaitlist()">Promover</button></div></div>
-                <div class="waitlist-item"><span class="waitlist-pos">#2</span><div class="avatar sm muted">CS</div><span class="waitlist-name">Carla Sánchez</span><div class="waitlist-actions"><button class="btn btn-success btn-sm">Promover</button></div></div>
-                <div class="waitlist-item"><span class="waitlist-pos">#3</span><div class="avatar sm muted">JR</div><span class="waitlist-name">Julia Ruiz</span><div class="waitlist-actions"><button class="btn btn-success btn-sm">Promover</button></div></div>
+                <div class="waitlist-item"><span class="waitlist-pos">#1</span><div class="avatar sm muted">MG</div><span class="waitlist-name">Martín González</span><div class="waitlist-actions"><button class="btn btn-success btn-sm" onclick="promoteFromWaitlist('Martín González')">Promover</button></div></div>
+                <div class="waitlist-item"><span class="waitlist-pos">#2</span><div class="avatar sm muted">CS</div><span class="waitlist-name">Carla Sánchez</span><div class="waitlist-actions"><button class="btn btn-success btn-sm" onclick="promoteFromWaitlist('Carla Sánchez')">Promover</button></div></div>
+                <div class="waitlist-item"><span class="waitlist-pos">#3</span><div class="avatar sm muted">JR</div><span class="waitlist-name">Julia Ruiz</span><div class="waitlist-actions"><button class="btn btn-success btn-sm" onclick="promoteFromWaitlist('Julia Ruiz')">Promover</button></div></div>
               </div>
-              <div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" style="flex:1">Editar clase</button><button class="btn btn-ghost btn-sm">+ Agregar socio</button></div>
+              <div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" style="flex:1" id="edit-class-btn">Editar clase</button><button class="btn btn-ghost btn-sm" id="class-add-member-btn">+ Agregar socio</button></div>
             </div>
           </div>
         </div>
@@ -796,9 +815,9 @@
       <div class="page-content">
         <div class="page-header"><h1>Reportes</h1></div>
         <div class="report-filters">
-          <div class="date-range"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><input type="date" value="2026-01-01" /><span style="color:var(--muted);font-size:12px">—</span><input type="date" value="2026-01-15" /></div>
-          <select class="filter-select"><option>Todas las sucursales</option><option>Centro</option><option>Norte</option><option>Sur</option></select>
-          <button class="btn btn-secondary btn-sm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar</button>
+          <div class="date-range"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><input type="date" value="2026-01-01" id="reports-date-from" /><span style="color:var(--muted);font-size:12px">—</span><input type="date" value="2026-01-15" id="reports-date-to" /></div>
+          <select class="filter-select" id="reports-branch-filter"><option>Todas las sucursales</option><option>Centro</option><option>Norte</option><option>Sur</option></select>
+          <button class="btn btn-secondary btn-sm" id="reports-export-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar</button>
         </div>
         <div class="report-grid">
           <div class="mini-kpi"><div class="mini-kpi-label">Ingresos del período</div><div class="mini-kpi-value mono">$4.23M</div><div class="mini-kpi-delta" style="color:var(--success)">↑ $470K vs período anterior</div></div>
@@ -846,16 +865,16 @@
 
     <div id="screen-communications" class="screen">
       <div class="page-content">
-        <div class="page-header"><h1>Comunicaciones</h1><button class="btn btn-primary btn-sm">+ Nueva comunicación</button></div>
+        <div class="page-header"><h1>Comunicaciones</h1><button class="btn btn-primary btn-sm" id="new-communication-btn">+ Nueva comunicación</button></div>
         <div class="card">
           <div class="card-header"><span class="card-title">Plantillas guardadas</span></div>
           <div class="card-body" style="padding:0">
             <table class="members-table" style="border-radius:0;border:none">
               <thead><tr><th>Nombre</th><th>Asunto</th><th>Última modificación</th><th>Veces usada</th><th></th></tr></thead>
               <tbody>
-                <tr style="cursor:pointer"><td style="font-weight:600">Recordatorio renovación</td><td>Tu membresía está por vencer</td><td style="font-family:var(--font-mono);font-size:12px">Hace 3 días</td><td>47</td><td><button class="btn btn-ghost btn-sm">Usar</button></td></tr>
-                <tr style="cursor:pointer"><td style="font-weight:600">Bienvenida nuevo socio</td><td>¡Bienvenido/a a GymOS!</td><td style="font-family:var(--font-mono);font-size:12px">Hace 1 semana</td><td>38</td><td><button class="btn btn-ghost btn-sm">Usar</button></td></tr>
-                <tr style="cursor:pointer"><td style="font-weight:600">Cumpleaños</td><td>¡Feliz cumpleaños!</td><td style="font-family:var(--font-mono);font-size:12px">Hace 2 semanas</td><td>12</td><td><button class="btn btn-ghost btn-sm">Usar</button></td></tr>
+                <tr style="cursor:pointer"><td style="font-weight:600">Recordatorio renovación</td><td>Tu membresía está por vencer</td><td style="font-family:var(--font-mono);font-size:12px">Hace 3 días</td><td>47</td><td><button class="btn btn-ghost btn-sm" onclick="useCommunicationTemplate('renewal')">Usar</button></td></tr>
+                <tr style="cursor:pointer"><td style="font-weight:600">Bienvenida nuevo socio</td><td>¡Bienvenido/a a GymOS!</td><td style="font-family:var(--font-mono);font-size:12px">Hace 1 semana</td><td>38</td><td><button class="btn btn-ghost btn-sm" onclick="useCommunicationTemplate('welcome')">Usar</button></td></tr>
+                <tr style="cursor:pointer"><td style="font-weight:600">Cumpleaños</td><td>¡Feliz cumpleaños!</td><td style="font-family:var(--font-mono);font-size:12px">Hace 2 semanas</td><td>12</td><td><button class="btn btn-ghost btn-sm" onclick="useCommunicationTemplate('birthday')">Usar</button></td></tr>
               </tbody>
             </table>
           </div>
@@ -888,25 +907,25 @@
           </div>
           <div class="settings-panel">
             <div class="settings-section-title">Información general</div>
-            <div class="field" style="margin-bottom:16px"><label>Nombre del gimnasio</label><input class="input" value="Gimnasio Centro" /></div>
+            <div class="field" style="margin-bottom:16px"><label>Nombre del gimnasio</label><input class="input" value="Gimnasio Centro" id="settings-gym-name" /></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-              <div class="field"><label>Email de contacto</label><input class="input" value="contacto@gimnasio.com" /></div>
-              <div class="field"><label>Teléfono</label><input class="input" value="+54 11 5555-0000" /></div>
+              <div class="field"><label>Email de contacto</label><input class="input" value="contacto@gimnasio.com" id="settings-contact-email" /></div>
+              <div class="field"><label>Teléfono</label><input class="input" value="+54 11 5555-0000" id="settings-contact-phone" /></div>
             </div>
             <div class="settings-section-title" style="margin-top:28px">Preferencias</div>
             <div class="settings-row">
               <div><div style="font-size:14px">Notificar vencimientos</div><div class="sub">Alertar 3 días antes del vencimiento</div></div>
-              <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              <label class="toggle"><input type="checkbox" checked id="settings-notify-expirations" /><span class="toggle-slider"></span></label>
             </div>
             <div class="settings-row">
               <div><div style="font-size:14px">Recordatorios de cumpleaños</div><div class="sub">Notificar el día del cumpleaños del socio</div></div>
-              <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              <label class="toggle"><input type="checkbox" checked id="settings-birthday-reminders" /><span class="toggle-slider"></span></label>
             </div>
             <div class="settings-row">
               <div><div style="font-size:14px">Resumen semanal por email</div><div class="sub">Enviar métricas semanales al gerente</div></div>
-              <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+              <label class="toggle"><input type="checkbox" id="settings-weekly-summary" /><span class="toggle-slider"></span></label>
             </div>
-            <div style="margin-top:24px"><button class="btn btn-primary">Guardar cambios</button></div>
+            <div style="margin-top:24px"><button class="btn btn-primary" id="save-settings-btn">Guardar cambios</button></div>
           </div>
         </div>
       </div>
@@ -974,7 +993,103 @@
         <div class="attendance-calendar" id="attendance-calendar"></div>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeProfileModal()">Cerrar</button><button class="btn btn-primary">Editar socio</button></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeProfileModal()">Cerrar</button><button class="btn btn-primary" id="edit-member-btn">Editar socio</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="member-form-modal">
+  <div class="modal modal-panel">
+    <div class="modal-header">
+      <div class="modal-avatar" id="member-form-avatar">NS</div>
+      <div class="modal-title">
+        <h2 id="member-form-title">Nuevo socio</h2>
+        <p class="modal-subtitle" id="member-form-subtitle">Completá los datos principales para darlo de alta.</p>
+      </div>
+      <button class="modal-close" onclick="closeMemberFormModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <form id="member-form" class="stack">
+        <div class="member-form-grid">
+          <div class="field"><label>Nombre</label><input class="input" id="member-form-first-name" required /></div>
+          <div class="field"><label>Apellido</label><input class="input" id="member-form-last-name" required /></div>
+          <div class="field"><label>Documento</label><input class="input" id="member-form-document" /></div>
+          <div class="field"><label>Fecha de nacimiento</label><input class="input" type="date" id="member-form-birthdate" /></div>
+          <div class="field"><label>Email</label><input class="input" type="email" id="member-form-email" /></div>
+          <div class="field"><label>Teléfono</label><input class="input" id="member-form-phone" /></div>
+          <div class="field full"><label>Dirección</label><input class="input" id="member-form-address" /></div>
+          <div class="field"><label>Contacto de emergencia</label><input class="input" id="member-form-emergency-name" /></div>
+          <div class="field"><label>Tel. emergencia</label><input class="input" id="member-form-emergency-phone" /></div>
+          <div class="field full"><label>Notas</label><textarea class="input textarea" id="member-form-notes" placeholder="Alergias, observaciones o contexto útil..."></textarea></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeMemberFormModal()">Cancelar</button>
+      <button class="btn btn-primary" id="member-form-submit-btn">Guardar socio</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="communication-modal">
+  <div class="modal modal-panel compact">
+    <div class="modal-header">
+      <div class="modal-avatar">CM</div>
+      <div class="modal-title">
+        <h2>Nueva comunicación</h2>
+        <p class="modal-subtitle">Mandá un correo directo o partí de una plantilla.</p>
+      </div>
+      <button class="modal-close" onclick="closeCommunicationModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="stack">
+        <div>
+          <div class="inline-hint" style="margin-bottom:8px">Destinatarios</div>
+          <div class="recipient-pills" id="communication-recipients"></div>
+        </div>
+        <div class="field">
+          <label>Agregar socio</label>
+          <select class="filter-select" id="communication-member-select"></select>
+        </div>
+        <div class="field">
+          <label>Asunto</label>
+          <input class="input" id="communication-subject" />
+        </div>
+        <div class="field">
+          <label>Mensaje</label>
+          <textarea class="input textarea" id="communication-body"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeCommunicationModal()">Cancelar</button>
+      <button class="btn btn-primary" id="communication-send-btn">Enviar comunicación</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="class-editor-modal">
+  <div class="modal modal-panel compact">
+    <div class="modal-header">
+      <div class="modal-avatar">CL</div>
+      <div class="modal-title">
+        <h2>Editar clase</h2>
+        <p class="modal-subtitle">Ajustá el bloque de agenda sin salir del panel.</p>
+      </div>
+      <button class="modal-close" onclick="closeClassEditorModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="class-edit-grid">
+        <div class="field"><label>Clase</label><input class="input" id="class-editor-name" value="HIIT Advanced" /></div>
+        <div class="field"><label>Coach</label><input class="input" id="class-editor-coach" value="Martina López" /></div>
+        <div class="field"><label>Hora</label><input class="input" id="class-editor-time" value="18:00" /></div>
+        <div class="field"><label>Cupo</label><input class="input" id="class-editor-capacity" type="number" value="15" min="1" /></div>
+      </div>
+      <div class="inline-hint">Estos cambios se guardan solo en la sesión local del panel.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeClassEditorModal()">Cancelar</button>
+      <button class="btn btn-primary" id="class-editor-save-btn">Guardar clase</button>
+    </div>
   </div>
 </div>
 
@@ -995,218 +1110,1132 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script>
-const MEMBERS=[
-  {name:'Fernando Costas',initials:'FC',doc:'35.412.678',plan:'Premium',status:'active',lastVisit:'Hoy 8:47',color:'var(--accent)'},
-  {name:'Laura Rodríguez',initials:'LR',doc:'28.765.432',plan:'VIP',status:'warning',lastVisit:'Ayer 18:30',color:'var(--frozen)'},
-  {name:'Pablo Mansilla',initials:'PM',doc:'40.123.456',plan:'Premium',status:'active',lastVisit:'Hace 2 días',color:'var(--accent)'},
-  {name:'Ana Soledad',initials:'AS',doc:'33.987.654',plan:'Premium',status:'danger',lastVisit:'Hace 4 días',color:'var(--warning)'},
-  {name:'Juan Torres',initials:'JT',doc:'29.456.789',plan:'Básico',status:'active',lastVisit:'Hoy 8:22',color:'var(--success)'},
-  {name:'Carla Sánchez',initials:'CS',doc:'31.234.567',plan:'VIP',status:'active',lastVisit:'Hace 1 día',color:'var(--frozen)'},
-  {name:'Martín González',initials:'MG',doc:'27.654.321',plan:'Premium',status:'frozen',lastVisit:'Hace 12 días',color:'var(--frozen)'},
-  {name:'Julia Ruiz',initials:'JR',doc:'38.765.123',plan:'Básico',status:'warning',lastVisit:'Hace 3 días',color:'var(--warning)'},
-];
-const BADGE={active:['badge-active','● Activa'],warning:['badge-warning','● Por vencer'],danger:['badge-danger','● Vencida'],frozen:['badge-frozen','● Congelada']};
+const API_PREFIX = '/api/v1';
+const STATUS_META = {
+  active: { badge: 'badge-active', label: '● Activa', className: 'ok', text: 'Check-in exitoso', color: 'var(--accent)' },
+  warning: { badge: 'badge-warning', label: '● Por vencer', className: 'warn', text: 'Membresía por vencer', color: 'var(--warning)' },
+  expired: { badge: 'badge-danger', label: '● Vencida', className: 'error', text: 'Membresía vencida', color: 'var(--danger)' },
+  frozen: { badge: 'badge-frozen', label: '● Congelada', className: 'error', text: 'Membresía congelada', color: 'var(--frozen)' },
+  none: { badge: 'badge-neutral', label: '● Sin membresía', className: 'error', text: 'Sin membresía activa', color: 'var(--muted)' },
+};
+const COMMUNICATION_TEMPLATES = {
+  renewal: {
+    subject: 'Tu membresía está por vencer',
+    body: 'Hola {{firstName}}, te escribimos desde GymOS para recordarte que tu membresía vence pronto. Si querés, respondé este mensaje y te ayudamos a renovarla hoy mismo.',
+  },
+  welcome: {
+    subject: '¡Bienvenido/a a GymOS!',
+    body: 'Hola {{firstName}}, gracias por sumarte a GymOS. Ya podés gestionar tus clases, check-ins y renovaciones con el equipo desde recepción.',
+  },
+  birthday: {
+    subject: '¡Feliz cumpleaños!',
+    body: 'Hola {{firstName}}, todo el equipo de GymOS te desea un gran cumpleaños. Cuando pases por el gym, tenemos una sorpresa para vos.',
+  },
+  debt: {
+    subject: 'Regularización pendiente de tu cuenta',
+    body: 'Hola {{firstName}}, detectamos un saldo pendiente en tu cuenta. Si querés regularizarlo hoy, respondé este mensaje y lo resolvemos desde recepción.',
+  },
+};
+const state = {
+  token: localStorage.getItem('gymos_token') || null,
+  refreshToken: localStorage.getItem('gymos_refresh_token') || null,
+  user: null,
+  dashboard: null,
+  members: [],
+  plans: [],
+  feed: [],
+  selectedMemberId: null,
+  wizardStep: 1,
+  wizardMemberId: null,
+  wizardPlanId: null,
+  wizardPlanName: null,
+  wizardPlanPrice: 0,
+  checkinResults: [],
+  searchTimer: null,
+  memberFormMode: 'create',
+  editingMemberId: null,
+  communicationRecipients: [],
+  settings: loadPersistedSettings(),
+};
 
-document.getElementById('login-btn').addEventListener('click',function(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').classList.add('active');
-  initDashboard();
+document.getElementById('login-btn').addEventListener('click', login);
+document.getElementById('member-search').addEventListener('input', renderMembers);
+document.getElementById('filter-plan').addEventListener('change', renderMembers);
+document.getElementById('filter-status').addEventListener('change', renderMembers);
+document.getElementById('new-member-btn').addEventListener('click', () => openMemberFormModal('create'));
+document.getElementById('sidebar-user-row').addEventListener('click', logout);
+document.getElementById('wizard-member-search').addEventListener('input', renderWizardMembers);
+document.getElementById('topbar-member-search').addEventListener('click', jumpToMemberSearch);
+document.getElementById('members-export-btn').addEventListener('click', exportMembersCsv);
+document.getElementById('dashboard-view-all-btn').addEventListener('click', () => showScreen('checkin'));
+document.getElementById('alert-debtors').addEventListener('click', () => openCommunicationModal({ template: 'debt', recipients: getMembersByStatus(['expired', 'warning']) }));
+document.getElementById('alert-renewals').addEventListener('click', () => { showScreen('members'); document.getElementById('filter-status').value = 'Por vencer'; renderMembers(); });
+document.getElementById('alert-birthdays').addEventListener('click', () => openCommunicationModal({ template: 'birthday', recipients: state.members.slice(0, 3) }));
+document.getElementById('reports-export-btn').addEventListener('click', exportReportsCsv);
+document.getElementById('new-communication-btn').addEventListener('click', () => openCommunicationModal());
+document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+document.getElementById('edit-member-btn').addEventListener('click', () => openMemberFormModal('edit', state.selectedMemberId));
+document.getElementById('member-form-submit-btn').addEventListener('click', submitMemberForm);
+document.getElementById('communication-member-select').addEventListener('change', addCommunicationRecipientFromSelect);
+document.getElementById('communication-send-btn').addEventListener('click', sendCommunication);
+document.getElementById('edit-class-btn').addEventListener('click', openClassEditorModal);
+document.getElementById('class-add-member-btn').addEventListener('click', addSelectedMemberToClass);
+document.getElementById('class-editor-save-btn').addEventListener('click', saveClassEditor);
+
+document.querySelectorAll('.nav-item[data-screen]').forEach((item) => {
+  item.addEventListener('click', () => showScreen(item.dataset.screen));
+});
+
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('.checkin-search-wrap')) {
+    document.getElementById('checkin-results').classList.remove('active');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', async function () {
+  document.getElementById('wizard-start-date').value = new Date().toISOString().slice(0, 10);
+  applySettingsToForm();
+  if (state.token) {
+    try {
+      await bootstrapSession();
+      return;
+    } catch {
+      clearSession();
+    }
+  }
   renderMembers();
 });
 
-document.querySelectorAll('.nav-item[data-screen]').forEach(item=>{
-  item.addEventListener('click',()=>{
-    const screen=item.dataset.screen;
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById('screen-'+screen).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    item.classList.add('active');
-    const titles={dashboard:'Dashboard',members:'Socios',memberships:'Membresías',checkin:'Check-in',schedule:'Agenda',reports:'Reportes',communications:'Comunicaciones',settings:'Configuración'};
-    document.getElementById('topbar-title').textContent=titles[screen]||screen;
-    if(screen==='reports') initReportBars();
+function loadPersistedSettings() {
+  try {
+    return JSON.parse(localStorage.getItem('gymos_settings') || '{}');
+  } catch {
+    return {};
+  }
+}
+
+async function apiFetch(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  }
+  if (state.token) {
+    headers.Authorization = `Bearer ${state.token}`;
+  }
+
+  const response = await fetch(`${API_PREFIX}${path}`, { ...options, headers });
+  if (response.status === 401) {
+    clearSession();
+    showLoginScreen();
+    throw new Error('Sesión vencida');
+  }
+
+  const text = await response.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
+  }
+
+  if (!response.ok) {
+    const message = data?.message || 'Error inesperado';
+    throw new Error(Array.isArray(message) ? message.join(', ') : message);
+  }
+
+  return data;
+}
+
+function saveSession() {
+  if (document.getElementById('remember').checked && state.token) {
+    localStorage.setItem('gymos_token', state.token);
+    localStorage.setItem('gymos_refresh_token', state.refreshToken || '');
+  }
+}
+
+function clearSession() {
+  state.token = null;
+  state.refreshToken = null;
+  state.user = null;
+  localStorage.removeItem('gymos_token');
+  localStorage.removeItem('gymos_refresh_token');
+}
+
+async function login() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const error = document.getElementById('login-error');
+  error.style.display = 'none';
+
+  try {
+    const result = await fetch(`${API_PREFIX}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await result.json();
+    if (!result.ok) {
+      throw new Error(data?.message || 'Credenciales inválidas');
+    }
+    state.token = data.accessToken;
+    state.refreshToken = data.refreshToken;
+    saveSession();
+    await bootstrapSession();
+  } catch (err) {
+    error.textContent = err.message || 'No se pudo iniciar sesión.';
+    error.style.display = 'block';
+  }
+}
+
+async function bootstrapSession() {
+  state.user = await apiFetch('/auth/me');
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  hydrateUserChrome();
+  await Promise.all([loadDashboard(), loadMembers(), loadPlans(), loadCheckinFeed()]);
+  showScreen('dashboard');
+}
+
+function showLoginScreen() {
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('login-screen').style.display = 'grid';
+}
+
+function hydrateUserChrome() {
+  const profile = state.user?.profile;
+  const firstName = profile?.firstName || 'María';
+  const lastName = profile?.lastName || 'García';
+  const fullName = `${firstName} ${lastName}`.trim();
+  document.getElementById('sidebar-user-avatar').textContent = getInitials(fullName);
+  document.getElementById('sidebar-user-name').textContent = fullName;
+  document.getElementById('greeting-title').textContent = `Buenos días, ${firstName}`;
+}
+
+function showScreen(screen) {
+  document.querySelectorAll('.screen').forEach((item) => item.classList.remove('active'));
+  document.getElementById(`screen-${screen}`).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach((item) => item.classList.remove('active'));
+  document.querySelector(`.nav-item[data-screen="${screen}"]`)?.classList.add('active');
+
+  const titles = {
+    dashboard: 'Dashboard',
+    members: 'Socios',
+    memberships: 'Membresías',
+    checkin: 'Check-in',
+    schedule: 'Agenda',
+    reports: 'Reportes',
+    communications: 'Comunicaciones',
+    settings: 'Configuración',
+  };
+  document.getElementById('topbar-title').textContent = titles[screen] || 'GymOS';
+
+  if (screen === 'members') renderMembers();
+  if (screen === 'memberships') renderPlans();
+  if (screen === 'checkin') renderCheckinFeed();
+}
+
+function jumpToMemberSearch() {
+  showScreen('members');
+  const input = document.getElementById('member-search');
+  input.focus();
+  input.select();
+}
+
+function getMembersByStatus(statuses) {
+  return state.members.filter((member) => statuses.includes(member.status));
+}
+
+function getFilteredMembers() {
+  const search = document.getElementById('member-search').value.trim().toLowerCase();
+  const planFilter = document.getElementById('filter-plan').value;
+  const statusFilter = document.getElementById('filter-status').value;
+
+  return state.members.filter((member) => {
+    const matchesSearch = !search || member.fullName.toLowerCase().includes(search) || (member.documentNumber || '').includes(search) || (member.email || '').toLowerCase().includes(search);
+    const matchesPlan = planFilter === 'Todos los planes' || member.plan === planFilter;
+    const matchesStatus =
+      statusFilter === 'Todos los estados' ||
+      (statusFilter === 'Activa' && member.status === 'active') ||
+      (statusFilter === 'Por vencer' && member.status === 'warning') ||
+      (statusFilter === 'Vencida' && member.status === 'expired') ||
+      (statusFilter === 'Congelada' && member.status === 'frozen');
+    return matchesSearch && matchesPlan && matchesStatus;
   });
-});
-
-function initDashboard(){
-  const data=[312,298,341,289,356,398,347];
-  const max=Math.max(...data);
-  const chart=document.getElementById('checkin-chart');
-  if(chart) chart.innerHTML=data.map((v,i)=>`<div class="chart-bar ${i===5?'highlight':''}" style="height:${Math.round((v/max)*130)}px"></div>`).join('');
 }
 
-function initReportBars(){
-  const rbc=document.getElementById('report-barchart');
-  if(!rbc||rbc.children.length>0) return;
-  const weeks=[{label:'Ene 29',val:3.8},{label:'Ene 5',val:4.1},{label:'Ene 12',val:3.9},{label:'Ene 19',val:4.4},{label:'Ene 26',val:3.7},{label:'Feb 2',val:4.6},{label:'Feb 9',val:4.23}];
-  const maxV=Math.max(...weeks.map(w=>w.val));
-  rbc.innerHTML=weeks.map(w=>{
-    const h=Math.round((w.val/maxV)*160);
-    return`<div class="bar-col"><div class="bar-val">$${w.val}M</div><div class="bar" style="height:${h}px"></div><div class="bar-label">${w.label}</div></div>`;
-  }).join('');
+function resetMemberForm() {
+  document.getElementById('member-form').reset();
+  document.getElementById('member-form-document').value = '';
+  document.getElementById('member-form-birthdate').value = '';
+  document.getElementById('member-form-address').value = '';
+  document.getElementById('member-form-emergency-name').value = '';
+  document.getElementById('member-form-emergency-phone').value = '';
+  document.getElementById('member-form-notes').value = '';
 }
 
-function renderMembers(){
-  const tbody=document.getElementById('members-tbody');
-  if(!tbody) return;
-  tbody.innerHTML=MEMBERS.map(m=>{
-    const [cls,label]=BADGE[m.status]||BADGE.active;
-    return`<tr onclick="selectMember('${m.name}')" style="cursor:pointer">
-      <td><input type="checkbox" class="table-checkbox" onclick="event.stopPropagation()" /></td>
-      <td><div class="member-cell"><div class="avatar sm" style="background:${m.color}">${m.initials}</div><div><div class="member-name">${m.name}</div><div class="member-email">${m.doc}</div></div></div></td>
-      <td style="font-family:var(--font-mono);font-size:12px">${m.doc}</td>
-      <td><span class="badge badge-info">${m.plan}</span></td>
-      <td><span class="badge ${cls}">${label}</span></td>
-      <td style="font-size:12px;color:var(--muted)">${m.lastVisit}</td>
-      <td><button class="action-dots" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
-    </tr>`;
-  }).join('');
-}
+async function openMemberFormModal(mode = 'create', memberId = null) {
+  state.memberFormMode = mode;
+  state.editingMemberId = memberId;
+  closeProfileModal();
+  resetMemberForm();
 
-function selectMember(name){
-  const m=MEMBERS.find(x=>x.name===name);
-  if(!m) return;
-  document.getElementById('qp-avatar').textContent=m.initials;
-  document.getElementById('qp-avatar').style.background=m.color;
-  document.getElementById('qp-name').textContent=m.name;
-  document.getElementById('qp-meta').textContent=`DNI ${m.doc}`;
-  document.getElementById('qp-plan').textContent=m.plan;
-  const [cls,label]=BADGE[m.status]||BADGE.active;
-  const se=document.getElementById('qp-status');
-  se.className='badge '+cls; se.textContent=label;
-  const expires={active:'28/feb/2026',warning:'22/ene/2026',danger:'15/dic/2025',frozen:'15/ene/2026'};
-  document.getElementById('qp-expires').textContent=expires[m.status]||'';
-  const visits={active:'14 de 20',warning:'8 de 20',danger:'2 de 20',frozen:'1 de 20'};
-  document.getElementById('qp-visits').textContent=visits[m.status]||'';
-  const fill={active:'70',warning:'40',danger:'10',frozen:'5'};
-  document.getElementById('qp-attendance').style.width=fill[m.status]+'%';
-}
+  const isEdit = mode === 'edit' && memberId;
+  document.getElementById('member-form-title').textContent = isEdit ? 'Editar socio' : 'Nuevo socio';
+  document.getElementById('member-form-subtitle').textContent = isEdit
+    ? 'Actualizá la ficha del socio sin salir del panel.'
+    : 'Completá los datos principales para darlo de alta.';
+  document.getElementById('member-form-submit-btn').textContent = isEdit ? 'Guardar cambios' : 'Guardar socio';
 
-function openMemberProfile(){document.getElementById('profile-modal').classList.add('active');buildAttendanceCalendar()}
-function closeProfileModal(){document.getElementById('profile-modal').classList.remove('active')}
-function switchTab(el,tabId){
-  document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.querySelectorAll('#profile-modal .modal-body > div').forEach(d=>d.style.display='none');
-  document.getElementById(tabId).style.display='block';
-}
-function buildAttendanceCalendar(){
-  const cal=document.getElementById('attendance-calendar');
-  if(!cal) return;
-  const days=['Do','Lu','Ma','Mi','Ju','Vi','Sá'];
-  const visited=[1,3,5,6,8,10,11,13,14,15,17,18,20,21];
-  let html=days.map(d=>`<div class="calendar-header">${d}</div>`).join('');
-  const firstDay=new Date(2026,0,1).getDay();
-  for(let i=0;i<firstDay;i++) html+='<div></div>';
-  for(let d=1;d<=31;d++) html+=`<div class="calendar-day ${visited.includes(d)?'visited':''}">${d}</div>`;
-  cal.innerHTML=html;
-}
-
-let wizardStep=1;
-function showWizard(){document.getElementById('membership-wizard').style.display='block';wizardStep=1;updateWizardUI()}
-function updateWizardUI(){
-  for(let i=1;i<=3;i++){
-    const s=document.getElementById('wstep'+i);
-    s.className='wizard-step'+(i<wizardStep?' done':i===wizardStep?' active':'');
-    document.getElementById('wizard-step-'+i).style.display=i===wizardStep?'block':'none';
-  }
-  document.getElementById('wizard-back').style.display=wizardStep>1?'inline-flex':'none';
-  document.getElementById('wizard-next').textContent=wizardStep===3?'✓ Confirmar membresía':'Siguiente →';
-}
-function wizardNext(){if(wizardStep<3){wizardStep++;updateWizardUI()}else{showToast('Membresía creada con éxito','success');document.getElementById('membership-wizard').style.display='none'}}
-function wizardBack(){if(wizardStep>1){wizardStep--;updateWizardUI()}}
-function selectPlan(el,name,price){document.querySelectorAll('.plan-select-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected')}
-
-const CHECKIN_MEMBERS=[
-  {name:'Fernando Costas',initials:'FC',plan:'Premium',status:'active',color:'var(--accent)'},
-  {name:'Laura Rodríguez',initials:'LR',plan:'VIP',status:'warning',color:'var(--frozen)'},
-  {name:'Pablo Mansilla',initials:'PM',plan:'Premium',status:'active',color:'var(--accent)'},
-  {name:'Ana Soledad',initials:'AS',plan:'Premium',status:'danger',color:'var(--warning)'},
-  {name:'Juan Torres',initials:'JT',plan:'Básico',status:'active',color:'var(--success)'},
-];
-
-function handleCheckinSearch(val){
-  const results=document.getElementById('checkin-results');
-  if(val.length<2){results.classList.remove('active');return;}
-  const filtered=CHECKIN_MEMBERS.filter(m=>m.name.toLowerCase().includes(val.toLowerCase()));
-  if(filtered.length===0){results.innerHTML='<div style="padding:16px;color:var(--muted)">No se encontraron socios</div>';results.classList.add('active');return;}
-  results.innerHTML=filtered.map(m=>`<div class="checkin-result-item" onclick="confirmCheckin('${m.name}','${m.initials}','${m.plan}','${m.status}','${m.color}')"><div class="avatar sm" style="background:${m.color}">${m.initials}</div><div><div style="font-weight:600;font-size:13px">${m.name}</div><div style="font-size:12px;color:var(--muted)">${m.plan}</div></div></div>`).join('');
-  results.classList.add('active');
-}
-
-function confirmCheckin(name,initials,plan,status,color){
-  document.getElementById('checkin-results').classList.remove('active');
-  document.getElementById('checkin-input').value=name;
-  showCheckinConfirm(status,name,initials,plan,color);
-}
-
-function showCheckinConfirm(status,name,initials,plan,color){
-  const overlay=document.getElementById('checkin-modal-overlay');
-  const icon=document.getElementById('cm-icon');
-  document.getElementById('cm-avatar').textContent=initials||'FC';
-  document.getElementById('cm-avatar').style.background=color||'var(--accent)';
-  document.getElementById('cm-name').textContent=name||'Fernando Costas';
-  document.getElementById('cm-plan').textContent=`Plan ${plan||'Premium'} · Vence 28/feb/2026`;
-  if(status==='active'||status===undefined){
-    icon.className='cm-icon success';
-    icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
-    document.getElementById('cm-status').className='cm-status ok';
-    document.getElementById('cm-status').textContent='✓ Check-in exitoso';
-  } else if(status==='warning'){
-    icon.className='cm-icon warning';
-    icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
-    document.getElementById('cm-status').className='cm-status warn';
-    document.getElementById('cm-status').textContent='⚠ Membresía por vencer';
+  if (isEdit) {
+    try {
+      const member = await apiFetch(`/members/${memberId}`);
+      document.getElementById('member-form-avatar').textContent = getInitials(`${member.firstName} ${member.lastName}`);
+      document.getElementById('member-form-first-name').value = member.firstName || '';
+      document.getElementById('member-form-last-name').value = member.lastName || '';
+      document.getElementById('member-form-document').value = member.documentNumber || '';
+      document.getElementById('member-form-birthdate').value = member.dateOfBirth ? new Date(member.dateOfBirth).toISOString().slice(0, 10) : '';
+      document.getElementById('member-form-email').value = member.email || '';
+      document.getElementById('member-form-phone').value = member.phone || '';
+      document.getElementById('member-form-address').value = member.address || '';
+      document.getElementById('member-form-emergency-name').value = member.emergencyContactName || '';
+      document.getElementById('member-form-emergency-phone').value = member.emergencyContactPhone || '';
+      document.getElementById('member-form-notes').value = member.notes || '';
+    } catch (err) {
+      showToast(err.message || 'No se pudo cargar el socio', 'error');
+      return;
+    }
   } else {
-    icon.className='cm-icon error';
-    icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>';
-    document.getElementById('cm-status').className='cm-status error';
-    document.getElementById('cm-status').textContent='✕ Membresía vencida';
+    document.getElementById('member-form-avatar').textContent = 'NS';
   }
-  const now=new Date();
-  document.getElementById('cm-time').textContent=`Hoy ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-  overlay.classList.add('active');
-  const feedList=document.getElementById('feed-list');
-  const statusLabel=status==='active'?'Check-in':status==='warning'?'Por vencer':'Denegado';
-  const statusClass=status==='active'?'ok':status==='warning'?'warn':'error';
-  const newItem=document.createElement('div');
-  newItem.className='feed-item';
-  newItem.innerHTML=`<span class="feed-time">${document.getElementById('cm-time').textContent.split(' ')[1]}</span><div class="feed-avatar" style="background:${color||'var(--accent)'}">${initials||'FC'}</div><span class="feed-name">${name||'Socio'}</span><span class="feed-type">Acceso libre</span><span class="feed-status ${statusClass}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>${statusLabel}</span>`;
-  feedList.insertBefore(newItem,feedList.firstChild);
-  const count=parseInt(document.getElementById('feed-count').textContent)+1;
-  document.getElementById('feed-count').textContent=count;
-  showToast(`Check-in registrado — ${name||'Socio'}`,'success');
+
+  document.getElementById('member-form-modal').classList.add('active');
 }
 
-function closeCheckinModal(){document.getElementById('checkin-modal-overlay').classList.remove('active')}
-
-function quickCheckin(className){
-  const now=new Date();
-  const timeStr=`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-  const feedList=document.getElementById('feed-list');
-  const newItem=document.createElement('div');
-  newItem.className='feed-item';
-  newItem.innerHTML=`<span class="feed-time">${timeStr}</span><div class="feed-avatar">FC</div><span class="feed-name">Fernando Costas</span><span class="feed-type">${className}</span><span class="feed-status ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Check-in</span>`;
-  feedList.insertBefore(newItem,feedList.firstChild);
-  const count=parseInt(document.getElementById('feed-count').textContent)+1;
-  document.getElementById('feed-count').textContent=count;
-  showToast(`Check-in registrado — Fernando Costas · ${className}`,'success');
+function closeMemberFormModal() {
+  document.getElementById('member-form-modal').classList.remove('active');
 }
 
-function promoteFromWaitlist(){showToast('Martín González promovido desde lista de espera','success')}
+async function submitMemberForm() {
+  const payload = {
+    firstName: document.getElementById('member-form-first-name').value.trim(),
+    lastName: document.getElementById('member-form-last-name').value.trim(),
+    documentType: 'DNI',
+    documentNumber: document.getElementById('member-form-document').value.trim() || undefined,
+    dateOfBirth: document.getElementById('member-form-birthdate').value || undefined,
+    email: document.getElementById('member-form-email').value.trim() || undefined,
+    phone: document.getElementById('member-form-phone').value.trim() || undefined,
+    address: document.getElementById('member-form-address').value.trim() || undefined,
+    emergencyContactName: document.getElementById('member-form-emergency-name').value.trim() || undefined,
+    emergencyContactPhone: document.getElementById('member-form-emergency-phone').value.trim() || undefined,
+    notes: document.getElementById('member-form-notes').value.trim() || undefined,
+  };
 
-function showToast(msg,type='success'){
-  const c=document.getElementById('toast-container');
-  const t=document.createElement('div');
-  t.className='toast '+type;
-  t.textContent=msg;
-  c.appendChild(t);
-  setTimeout(()=>t.remove(),3500);
+  if (!payload.firstName || !payload.lastName) {
+    showToast('Nombre y apellido son obligatorios', 'error');
+    return;
+  }
+
+  try {
+    if (state.memberFormMode === 'edit' && state.editingMemberId) {
+      await apiFetch(`/members/${state.editingMemberId}`, { method: 'PUT', body: JSON.stringify(payload) });
+      showToast('Socio actualizado con éxito', 'success');
+    } else {
+      const created = await apiFetch('/members', { method: 'POST', body: JSON.stringify(payload) });
+      state.selectedMemberId = created.id;
+      showToast('Socio creado con éxito', 'success');
+    }
+    closeMemberFormModal();
+    await loadMembers();
+    if (state.selectedMemberId) {
+      await openMemberProfile(state.selectedMemberId);
+    }
+  } catch (err) {
+    showToast(err.message || 'No se pudo guardar el socio', 'error');
+  }
 }
 
-document.addEventListener('click',function(e){
-  if(!e.target.closest('.checkin-search-wrap')) document.getElementById('checkin-results').classList.remove('active');
-});
-document.addEventListener('DOMContentLoaded',function(){renderMembers()});
+function openCommunicationModal({ template = null, recipients = [] } = {}) {
+  const uniqueRecipients = [];
+  const seen = new Set();
+  recipients.forEach((member) => {
+    if (member?.id && !seen.has(member.id)) {
+      seen.add(member.id);
+      uniqueRecipients.push(member);
+    }
+  });
+  state.communicationRecipients = uniqueRecipients;
+  populateCommunicationMemberOptions();
+  renderCommunicationRecipients();
+  if (template) {
+    applyCommunicationTemplate(template);
+  } else {
+    document.getElementById('communication-subject').value = '';
+    document.getElementById('communication-body').value = '';
+  }
+  document.getElementById('communication-modal').classList.add('active');
+}
+
+function closeCommunicationModal() {
+  state.communicationRecipients = [];
+  renderCommunicationRecipients();
+  document.getElementById('communication-subject').value = '';
+  document.getElementById('communication-body').value = '';
+  document.getElementById('communication-modal').classList.remove('active');
+}
+
+function populateCommunicationMemberOptions() {
+  const select = document.getElementById('communication-member-select');
+  select.innerHTML = ['<option value="">Seleccionar socio…</option>']
+    .concat(state.members.map((member) => `<option value="${member.id}">${escapeHtml(member.fullName)}${member.email ? ` · ${escapeHtml(member.email)}` : ''}</option>`))
+    .join('');
+  select.value = '';
+}
+
+function addCommunicationRecipientFromSelect() {
+  const select = document.getElementById('communication-member-select');
+  const member = state.members.find((item) => item.id === select.value);
+  if (!member || state.communicationRecipients.some((item) => item.id === member.id)) return;
+  state.communicationRecipients.push(member);
+  renderCommunicationRecipients();
+  select.value = '';
+}
+
+function renderCommunicationRecipients() {
+  const container = document.getElementById('communication-recipients');
+  if (!state.communicationRecipients.length) {
+    container.innerHTML = '<div class="empty-note">Todavía no elegiste destinatarios.</div>';
+    return;
+  }
+  container.innerHTML = state.communicationRecipients.map((member) => `<span class="pill">${escapeHtml(member.fullName)} <button class="btn btn-ghost btn-sm" style="padding:0;border:none" onclick="removeCommunicationRecipient('${member.id}')">×</button></span>`).join('');
+}
+
+function removeCommunicationRecipient(memberId) {
+  state.communicationRecipients = state.communicationRecipients.filter((member) => member.id !== memberId);
+  renderCommunicationRecipients();
+}
+
+function applyCommunicationTemplate(templateKey) {
+  const template = COMMUNICATION_TEMPLATES[templateKey];
+  if (!template) return;
+  const sampleMember = state.communicationRecipients[0] || state.members.find((member) => member.id === state.selectedMemberId) || state.members[0];
+  const firstName = sampleMember?.firstName || sampleMember?.fullName?.split(' ')[0] || 'equipo';
+  document.getElementById('communication-subject').value = template.subject;
+  document.getElementById('communication-body').value = template.body.replaceAll('{{firstName}}', firstName);
+}
+
+function useCommunicationTemplate(templateKey) {
+  const recipients = state.selectedMemberId ? state.members.filter((member) => member.id === state.selectedMemberId) : [];
+  openCommunicationModal({ template: templateKey, recipients });
+}
+
+async function sendCommunication() {
+  const subject = document.getElementById('communication-subject').value.trim();
+  const body = document.getElementById('communication-body').value.trim();
+  const recipients = state.communicationRecipients.filter((member) => member.email);
+  if (!recipients.length) {
+    showToast('Elegí al menos un socio con email', 'warning');
+    return;
+  }
+  if (!subject || !body) {
+    showToast('Completá asunto y mensaje', 'warning');
+    return;
+  }
+
+  try {
+    await Promise.all(recipients.map((member) => apiFetch('/communications/send', {
+      method: 'POST',
+      body: JSON.stringify({
+        to: member.email,
+        subject,
+        body: body.replaceAll('{{firstName}}', member.firstName || member.fullName.split(' ')[0]),
+      }),
+    })));
+    closeCommunicationModal();
+    showToast(`Comunicación enviada a ${recipients.length} socio${recipients.length === 1 ? '' : 's'}`, 'success');
+  } catch (err) {
+    showToast(err.message || 'No se pudo enviar la comunicación', 'error');
+  }
+}
+
+function applySettingsToForm() {
+  const defaults = {
+    gymName: 'Gimnasio Centro',
+    contactEmail: 'contacto@gimnasio.com',
+    contactPhone: '+54 11 5555-0000',
+    notifyExpirations: true,
+    birthdayReminders: true,
+    weeklySummary: false,
+  };
+  const settings = { ...defaults, ...(state.settings || {}) };
+  document.getElementById('settings-gym-name').value = settings.gymName;
+  document.getElementById('settings-contact-email').value = settings.contactEmail;
+  document.getElementById('settings-contact-phone').value = settings.contactPhone;
+  document.getElementById('settings-notify-expirations').checked = settings.notifyExpirations;
+  document.getElementById('settings-birthday-reminders').checked = settings.birthdayReminders;
+  document.getElementById('settings-weekly-summary').checked = settings.weeklySummary;
+}
+
+function saveSettings() {
+  state.settings = {
+    gymName: document.getElementById('settings-gym-name').value.trim(),
+    contactEmail: document.getElementById('settings-contact-email').value.trim(),
+    contactPhone: document.getElementById('settings-contact-phone').value.trim(),
+    notifyExpirations: document.getElementById('settings-notify-expirations').checked,
+    birthdayReminders: document.getElementById('settings-birthday-reminders').checked,
+    weeklySummary: document.getElementById('settings-weekly-summary').checked,
+  };
+  localStorage.setItem('gymos_settings', JSON.stringify(state.settings));
+  showToast('Configuración guardada en este navegador', 'success');
+}
+
+function exportCsv(filename, rows) {
+  const csv = rows.map((row) => row.map((value) => `"${String(value ?? '').replaceAll('"', '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportMembersCsv() {
+  const rows = [
+    ['Nombre', 'Email', 'Documento', 'Plan', 'Estado', 'Ultima visita'],
+    ...getFilteredMembers().map((member) => [member.fullName, member.email || '', member.documentNumber || '', member.plan, getBadge(member.status).label.replace('● ', ''), member.lastVisitLabel]),
+  ];
+  exportCsv(`socios-${new Date().toISOString().slice(0, 10)}.csv`, rows);
+  showToast('Exportación de socios generada', 'success');
+}
+
+function exportReportsCsv() {
+  const rows = [
+    ['Desde', document.getElementById('reports-date-from').value, 'Hasta', document.getElementById('reports-date-to').value],
+    ['Sucursal', document.getElementById('reports-branch-filter').value, '', ''],
+    ['Métrica', 'Valor', '', ''],
+    ['Ingresos del período', document.getElementById('kpi-revenue-value').textContent, '', ''],
+    ['Socios activos', document.getElementById('kpi-members-value').textContent, '', ''],
+    ['Retención mensual', document.getElementById('kpi-retention-value').textContent, '', ''],
+    ['Ocupación promedio', document.getElementById('kpi-occupancy-value').textContent, '', ''],
+  ];
+  exportCsv(`reporte-gymos-${new Date().toISOString().slice(0, 10)}.csv`, rows);
+  showToast('Reporte exportado en CSV', 'success');
+}
+
+function openClassEditorModal() {
+  document.getElementById('class-editor-modal').classList.add('active');
+}
+
+function closeClassEditorModal() {
+  document.getElementById('class-editor-modal').classList.remove('active');
+}
+
+function saveClassEditor() {
+  showToast(`Clase actualizada: ${document.getElementById('class-editor-name').value.trim()}`, 'success');
+  closeClassEditorModal();
+}
+
+function addSelectedMemberToClass() {
+  const member = state.members.find((item) => item.id === state.selectedMemberId);
+  if (!member) {
+    showToast('Seleccioná un socio primero', 'warning');
+    return;
+  }
+  showToast(`${member.fullName} agregado a la clase actual`, 'success');
+}
+
+async function loadDashboard() {
+  state.dashboard = await apiFetch('/reports/dashboard');
+  renderDashboard();
+}
+
+function renderDashboard() {
+  if (!state.dashboard) return;
+  const { revenue, activeMembers, retentionRate, occupancyRate, checkinsLast7Days } = state.dashboard;
+  document.getElementById('kpi-revenue-value').textContent = formatCompactCurrency(revenue.current);
+  document.getElementById('kpi-revenue-delta').innerHTML = deltaMarkup(revenue.change, `${Math.abs(revenue.change).toFixed(1)}% vs mes anterior`);
+  document.getElementById('kpi-members-value').textContent = formatInteger(activeMembers.current);
+  document.getElementById('kpi-members-delta').innerHTML = deltaMarkup(activeMembers.newThisWeek, `+${activeMembers.newThisWeek} nuevos esta semana`, true);
+  document.getElementById('kpi-retention-value').textContent = `${retentionRate.current}%`;
+  document.getElementById('kpi-retention-delta').innerHTML = deltaMarkup(retentionRate.change, `${Math.abs(retentionRate.change).toFixed(1)}pp vs mes anterior`);
+  document.getElementById('kpi-occupancy-value').textContent = `${occupancyRate.current}%`;
+  document.getElementById('kpi-occupancy-delta').innerHTML = deltaMarkup(occupancyRate.change, `${Math.abs(occupancyRate.change)}% vs semana anterior`);
+
+  const chart = document.getElementById('checkin-chart');
+  const max = Math.max(...checkinsLast7Days);
+  chart.innerHTML = checkinsLast7Days
+    .map((value, index) => `<div class="chart-bar ${index === checkinsLast7Days.length - 2 ? 'highlight' : ''}" style="height:${Math.max(16, Math.round((value / max) * 130))}px"></div>`)
+    .join('');
+}
+
+function deltaMarkup(value, label, forceUp = false) {
+  const isUp = forceUp || value >= 0;
+  const icon = isUp
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>';
+  return `${icon}${label}`;
+}
+
+async function loadMembers() {
+  const result = await apiFetch('/members?limit=100');
+  state.members = (result.members || []).map((member) => ({
+    ...member,
+    fullName: `${member.firstName} ${member.lastName}`,
+    initials: getInitials(`${member.firstName} ${member.lastName}`),
+    plan: member.membershipPlanName || 'Sin plan',
+    status: member.membershipStatus || 'none',
+    lastVisitLabel: formatRelativeDate(member.lastCheckinAt),
+  }));
+  populateCommunicationMemberOptions();
+  renderMembers();
+  selectMember(state.selectedMemberId || state.members[0]?.id);
+}
+
+function renderMembers() {
+  const filtered = getFilteredMembers();
+
+  document.getElementById('members-result-count').textContent = `${filtered.length} socios`;
+  const tbody = document.getElementById('members-tbody');
+  tbody.innerHTML = filtered
+    .map((member) => {
+      const badge = getBadge(member.status);
+      return `<tr onclick="selectMember('${member.id}')" style="cursor:pointer">
+        <td><input type="checkbox" class="table-checkbox" onclick="event.stopPropagation()" /></td>
+        <td><div class="member-cell"><div class="avatar sm" style="background:${memberColor(member.status)}">${member.initials}</div><div><div class="member-name">${escapeHtml(member.fullName)}</div><div class="member-email">${escapeHtml(member.email || member.documentNumber || '')}</div></div></div></td>
+        <td style="font-family:var(--font-mono);font-size:12px">${escapeHtml(formatDocument(member.documentNumber))}</td>
+        <td><span class="badge badge-info">${escapeHtml(member.plan)}</span></td>
+        <td><span class="badge ${badge.badge}">${badge.label}</span></td>
+        <td style="font-size:12px;color:var(--muted)">${escapeHtml(member.lastVisitLabel)}</td>
+        <td><button class="action-dots" onclick="event.stopPropagation(); openMemberProfile('${member.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+      </tr>`;
+    })
+    .join('');
+
+  if (!filtered.find((member) => member.id === state.selectedMemberId)) {
+    selectMember(filtered[0]?.id || null);
+  }
+
+  renderWizardMembers();
+}
+
+function selectMember(idOrName) {
+  const member = state.members.find((item) => item.id === idOrName || item.fullName === idOrName);
+  state.selectedMemberId = member?.id || null;
+  if (!member) return;
+
+  document.getElementById('qp-avatar').textContent = member.initials;
+  document.getElementById('qp-avatar').style.background = memberColor(member.status);
+  document.getElementById('qp-name').textContent = member.fullName;
+  document.getElementById('qp-meta').textContent = member.email || `DNI ${formatDocument(member.documentNumber)}`;
+  document.getElementById('qp-plan').textContent = member.plan;
+  document.getElementById('qp-expires').textContent = member.membershipEndDate ? formatDate(member.membershipEndDate) : 'Sin vencimiento';
+  document.getElementById('qp-visits').textContent = member.lastCheckinAt ? `Último ingreso ${formatRelativeDate(member.lastCheckinAt)}` : 'Sin ingresos recientes';
+  document.getElementById('qp-attendance').style.width = attendanceWidth(member.status);
+  const badge = getBadge(member.status);
+  const statusElement = document.getElementById('qp-status');
+  statusElement.className = `badge ${badge.badge}`;
+  statusElement.textContent = badge.label;
+}
+
+async function openMemberProfile(memberId = state.selectedMemberId) {
+  if (!memberId) {
+    showToast('Seleccioná un socio primero', 'warning');
+    return;
+  }
+
+  try {
+    const [member, invoices, payments] = await Promise.all([
+      apiFetch(`/members/${memberId}`),
+      apiFetch(`/billing/invoices/${memberId}`),
+      apiFetch(`/billing/payments/${memberId}`),
+    ]);
+
+    const fullName = `${member.firstName} ${member.lastName}`;
+    document.querySelector('#profile-modal .modal-avatar').textContent = getInitials(fullName);
+    document.querySelector('#profile-modal .modal-title h2').textContent = fullName;
+    document.querySelector('#profile-modal .modal-title p').textContent = member.email || `DNI ${formatDocument(member.documentNumber)}`;
+
+    document.getElementById('tab-info').innerHTML = `
+      <div class="profile-grid">
+        <div class="profile-field"><label>Documento</label><span>${escapeHtml(formatDocument(member.documentNumber))}</span></div>
+        <div class="profile-field"><label>Email</label><span>${escapeHtml(member.email || 'Sin email')}</span></div>
+        <div class="profile-field"><label>Teléfono</label><span>${escapeHtml(member.phone || 'Sin teléfono')}</span></div>
+        <div class="profile-field"><label>Dirección</label><span>${escapeHtml(member.address || 'Sin dirección')}</span></div>
+        <div class="profile-field"><label>Contacto de emergencia</label><span>${escapeHtml(member.emergencyContactName || 'No informado')}</span></div>
+        <div class="profile-field"><label>Tel. emergencia</label><span>${escapeHtml(member.emergencyContactPhone || 'No informado')}</span></div>
+      </div>
+      <div class="profile-history">
+        <h4>Notas</h4>
+        <div class="history-detail">${escapeHtml(member.notes || 'Sin notas registradas')}</div>
+      </div>
+    `;
+
+    const membership = member.membership;
+    document.getElementById('tab-membership').innerHTML = membership
+      ? `<div class="summary-card">
+          <div class="summary-row"><span>Plan</span><span>${escapeHtml(membership.planName)}</span></div>
+          <div class="summary-row"><span>Estado</span><span class="badge ${getBadge(membership.status).badge}">${getBadge(membership.status).label}</span></div>
+          <div class="summary-row"><span>Inicio</span><span>${formatDate(membership.startDate)}</span></div>
+          <div class="summary-row"><span>Vence</span><span>${formatDate(membership.endDate)}</span></div>
+        </div>`
+      : '<div class="history-detail">El socio no tiene membresía activa.</div>';
+
+    document.getElementById('tab-billing').innerHTML = renderBillingTable(invoices, payments);
+    renderAttendanceCalendar(memberId);
+    document.getElementById('profile-modal').classList.add('active');
+    switchTab(document.querySelector('.modal-tab.active') || document.querySelector('.modal-tab'), 'tab-info');
+  } catch (err) {
+    showToast(err.message || 'No se pudo cargar el perfil', 'error');
+  }
+}
+
+function closeProfileModal() {
+  document.getElementById('profile-modal').classList.remove('active');
+}
+
+function switchTab(el, tabId) {
+  document.querySelectorAll('.modal-tab').forEach((tab) => tab.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#profile-modal .modal-body > div').forEach((section) => {
+    section.style.display = 'none';
+  });
+  document.getElementById(tabId).style.display = 'block';
+}
+
+function renderBillingTable(invoices, payments) {
+  const paymentMap = new Map(payments.map((payment) => [payment.invoiceId, payment]));
+  if (!invoices.length) {
+    return '<div class="history-detail">Todavía no hay facturas para este socio.</div>';
+  }
+  return `<table class="members-table">
+      <thead><tr><th>Fecha</th><th>Concepto</th><th>Método</th><th style="text-align:right">Monto</th><th>Estado</th></tr></thead>
+      <tbody>
+        ${invoices.map((invoice) => {
+          const payment = paymentMap.get(invoice.id);
+          const badge = invoice.status === 'paid' ? 'badge-active' : 'badge-warning';
+          const label = invoice.status === 'paid' ? '● Pagado' : '● Pendiente';
+          return `<tr>
+            <td style="font-family:var(--font-mono);font-size:12px">${formatDate(invoice.createdAt)}</td>
+            <td>${escapeHtml(invoice.notes || invoice.invoiceNumber)}</td>
+            <td>${escapeHtml(payment?.method || invoice.paymentMethod || 'N/D')}</td>
+            <td style="text-align:right;font-family:var(--font-mono)">${formatCurrency(invoice.total)}</td>
+            <td><span class="badge ${badge}">${label}</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderAttendanceCalendar(memberId) {
+  const calendar = document.getElementById('attendance-calendar');
+  const memberFeed = state.feed.filter((item) => item.memberId === memberId);
+  const visits = new Set(memberFeed.map((item) => new Date(item.rawDate || item.createdAt).getDate()));
+  const headers = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'];
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
+  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  let html = headers.map((day) => `<div class="calendar-header">${day}</div>`).join('');
+  for (let i = 0; i < firstDay; i += 1) html += '<div></div>';
+  for (let day = 1; day <= lastDay; day += 1) {
+    html += `<div class="calendar-day ${visits.has(day) ? 'visited' : ''}">${day}</div>`;
+  }
+  calendar.innerHTML = html;
+}
+
+async function loadPlans() {
+  state.plans = await apiFetch('/memberships/plans');
+  renderPlans();
+}
+
+function renderPlans() {
+  const plansGrid = document.getElementById('plans-grid');
+  if (!plansGrid) return;
+  plansGrid.innerHTML = state.plans.map((plan, index) => {
+    const membersCount = state.members.filter((member) => member.plan === plan.name).length;
+    const featured = index === 1 ? ' featured' : '';
+    const badge = index === 1 ? '<div class="plan-badge">⭐ Más popular</div>' : '';
+    return `<div class="plan-card${featured}">
+      ${badge}
+      <div class="plan-name">${escapeHtml(plan.name)}</div>
+      <div class="plan-price">${formatCurrency(plan.priceMonthly)}<span>/mes</span></div>
+      <ul class="plan-benefits">
+        ${(plan.features || []).map((feature) => `<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>${escapeHtml(feature)}</li>`).join('')}
+      </ul>
+      <div class="plan-members">${membersCount} socios con este plan</div>
+      <div class="plan-actions">
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="prefillPlanFilter('${escapeHtml(plan.name)}')">Ver socios</button>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('La edición de planes queda para la próxima iteración','warning')">Editar</button>
+      </div>
+    </div>`;
+  }).join('');
+  renderWizardPlanOptions();
+}
+
+function prefillPlanFilter(planName) {
+  document.getElementById('filter-plan').value = planName;
+  showScreen('members');
+  renderMembers();
+}
+
+function showWizard() {
+  document.getElementById('membership-wizard').style.display = 'block';
+  state.wizardStep = 1;
+  state.wizardMemberId = state.selectedMemberId;
+  state.wizardPlanId = state.plans[0]?.id || null;
+  state.wizardPlanName = state.plans[0]?.name || null;
+  state.wizardPlanPrice = state.plans[0]?.priceMonthly || 0;
+  renderWizardMembers();
+  renderWizardPlanOptions();
+  updateWizardUI();
+}
+
+function updateWizardUI() {
+  for (let i = 1; i <= 3; i += 1) {
+    const step = document.getElementById(`wstep${i}`);
+    step.className = `wizard-step${i < state.wizardStep ? ' done' : i === state.wizardStep ? ' active' : ''}`;
+    document.getElementById(`wizard-step-${i}`).style.display = i === state.wizardStep ? 'block' : 'none';
+  }
+  document.getElementById('wizard-back').style.display = state.wizardStep > 1 ? 'inline-flex' : 'none';
+  document.getElementById('wizard-next').textContent = state.wizardStep === 3 ? '✓ Confirmar membresía' : 'Siguiente →';
+  if (state.wizardStep === 3) {
+    const member = state.members.find((item) => item.id === state.wizardMemberId);
+    const plan = state.plans.find((item) => item.id === state.wizardPlanId);
+    const startDate = document.getElementById('wizard-start-date').value;
+    document.getElementById('wizard-summary-member').textContent = member?.fullName || 'Sin seleccionar';
+    document.getElementById('wizard-summary-plan').textContent = plan?.name || 'Sin plan';
+    document.getElementById('wizard-summary-start').textContent = formatDate(startDate);
+    document.getElementById('wizard-summary-end').textContent = formatDate(addDays(startDate, plan?.durationDays || 30));
+    document.getElementById('wizard-summary-price').textContent = formatCurrency(plan?.priceMonthly || 0);
+    document.getElementById('wizard-summary-total').textContent = formatCurrency(plan?.priceMonthly || 0);
+  }
+}
+
+function wizardBack() {
+  if (state.wizardStep > 1) {
+    state.wizardStep -= 1;
+    updateWizardUI();
+  }
+}
+
+async function wizardNext() {
+  if (state.wizardStep === 1 && !state.wizardMemberId) {
+    showToast('Seleccioná un socio', 'warning');
+    return;
+  }
+  if (state.wizardStep === 2 && !state.wizardPlanId) {
+    showToast('Seleccioná un plan', 'warning');
+    return;
+  }
+
+  if (state.wizardStep < 3) {
+    state.wizardStep += 1;
+    updateWizardUI();
+    return;
+  }
+
+  try {
+    await apiFetch('/memberships', {
+      method: 'POST',
+      body: JSON.stringify({
+        memberId: state.wizardMemberId,
+        planId: state.wizardPlanId,
+        startDate: document.getElementById('wizard-start-date').value,
+        autoRenew: true,
+      }),
+    });
+    showToast('Membresía creada con éxito', 'success');
+    document.getElementById('membership-wizard').style.display = 'none';
+    await Promise.all([loadMembers(), loadPlans()]);
+  } catch (err) {
+    showToast(err.message || 'No se pudo crear la membresía', 'error');
+  }
+}
+
+function renderWizardMembers() {
+  const container = document.getElementById('wizard-member-results');
+  if (!container) return;
+  const term = document.getElementById('wizard-member-search').value.trim().toLowerCase();
+  const candidates = state.members.filter((member) => !term || member.fullName.toLowerCase().includes(term) || (member.documentNumber || '').includes(term));
+  container.innerHTML = candidates.map((member) => `
+    <div class="alert-item" style="cursor:pointer; ${state.wizardMemberId === member.id ? 'outline:2px solid var(--accent);' : ''}" onclick="selectWizardMember('${member.id}')">
+      <div class="alert-icon info" style="width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg></div>
+      <div class="alert-info"><div class="alert-title">${escapeHtml(member.fullName)}</div><div class="alert-sub">${escapeHtml(member.email || member.documentNumber || '')} · ${escapeHtml(member.plan)} (${escapeHtml(getBadge(member.status).label.replace('● ', '').toLowerCase())})</div></div>
+    </div>`).join('');
+}
+
+function selectWizardMember(memberId) {
+  state.wizardMemberId = memberId;
+  renderWizardMembers();
+}
+
+function renderWizardPlanOptions() {
+  const container = document.getElementById('wizard-plan-options');
+  if (!container) return;
+  if (!state.wizardPlanId && state.plans[0]) {
+    state.wizardPlanId = state.plans[0].id;
+  }
+  container.innerHTML = state.plans.map((plan) => `
+    <div class="plan-select-card ${state.wizardPlanId === plan.id ? 'selected' : ''}" onclick="selectPlan(this,'${plan.id}')">
+      <div style="font-weight:700;margin-bottom:4px">${escapeHtml(plan.name)}</div>
+      <div style="font-size:20px;font-weight:700">${formatCurrency(plan.priceMonthly)}<small>/mes</small></div>
+    </div>`).join('');
+}
+
+function selectPlan(el, planId) {
+  state.wizardPlanId = planId;
+  const plan = state.plans.find((item) => item.id === planId);
+  state.wizardPlanName = plan?.name || null;
+  state.wizardPlanPrice = plan?.priceMonthly || 0;
+  document.querySelectorAll('.plan-select-card').forEach((card) => card.classList.remove('selected'));
+  if (el?.classList) {
+    el.classList.add('selected');
+  }
+}
+
+async function loadCheckinFeed() {
+  const result = await apiFetch('/checkins/feed?limit=20');
+  state.feed = result.items || [];
+  renderCheckinFeed();
+  renderDashboardFeed();
+}
+
+function renderCheckinFeed() {
+  const feedList = document.getElementById('feed-list');
+  document.getElementById('feed-count').textContent = state.feed.length;
+  feedList.innerHTML = state.feed.map((item) => `
+    <div class="feed-item">
+      <span class="feed-time">${escapeHtml(item.time)}</span>
+      <div class="feed-avatar">${getInitials(item.memberName)}</div>
+      <span class="feed-name">${escapeHtml(item.memberName)}</span>
+      <span class="feed-type">${escapeHtml(item.checkinType || 'Acceso libre')}</span>
+      <span class="feed-status ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>${escapeHtml(item.status === 'warning' ? 'Por vencer' : 'Check-in')}</span>
+    </div>`).join('');
+}
+
+function renderDashboardFeed() {
+  const tbody = document.getElementById('dashboard-activity-body');
+  if (!tbody) return;
+  tbody.innerHTML = state.feed.slice(0, 5).map((item) => `
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:12px">${escapeHtml(item.time)}</td>
+      <td><div class="member-cell"><div class="avatar sm muted">${getInitials(item.memberName)}</div><span class="member-name">${escapeHtml(item.memberName)}</span></div></td>
+      <td>${escapeHtml(item.checkinType || 'Acceso libre')}</td>
+      <td><span class="badge badge-active">● ${item.status === 'warning' ? 'Por vencer' : 'Check-in'}</span></td>
+    </tr>`).join('');
+}
+
+function handleCheckinSearch(value) {
+  clearTimeout(state.searchTimer);
+  const results = document.getElementById('checkin-results');
+  if (value.trim().length < 2) {
+    results.classList.remove('active');
+    return;
+  }
+  state.searchTimer = setTimeout(async () => {
+    try {
+      state.checkinResults = await apiFetch(`/members/search?q=${encodeURIComponent(value.trim())}`);
+      if (!state.checkinResults.length) {
+        results.innerHTML = '<div style="padding:16px;color:var(--muted)">No se encontraron socios</div>';
+      } else {
+        results.innerHTML = state.checkinResults.map((member) => `
+          <div class="checkin-result-item" onclick="confirmCheckin('${member.id}')">
+            <div class="avatar sm" style="background:${memberColor(member.membershipStatus)}">${getInitials(`${member.firstName} ${member.lastName}`)}</div>
+            <div><div style="font-weight:600;font-size:13px">${escapeHtml(member.firstName)} ${escapeHtml(member.lastName)}</div><div style="font-size:12px;color:var(--muted)">${escapeHtml(member.membershipPlanName || 'Sin plan')}</div></div>
+          </div>`).join('');
+      }
+      results.classList.add('active');
+    } catch (err) {
+      showToast(err.message || 'No se pudo buscar socios', 'error');
+    }
+  }, 220);
+}
+
+async function confirmCheckin(memberId) {
+  const member = state.members.find((item) => item.id === memberId) || state.checkinResults.find((item) => item.id === memberId);
+  if (!member) {
+    showToast('No se pudo resolver el socio del check-in', 'error');
+    return;
+  }
+  document.getElementById('checkin-results').classList.remove('active');
+  document.getElementById('checkin-input').value = member.fullName || `${member.firstName} ${member.lastName}`;
+  await performCheckin(member, 'Acceso libre');
+}
+
+async function performCheckin(member, checkinType) {
+  try {
+    const result = await apiFetch('/checkins', {
+      method: 'POST',
+      body: JSON.stringify({
+        memberQuery: member.documentNumber || member.fullName || `${member.firstName} ${member.lastName}`,
+        checkinType,
+      }),
+    });
+    showCheckinConfirm(result.membershipStatus, result.memberName, getInitials(result.memberName), result.membershipPlan, memberColor(result.membershipStatus), checkinType);
+    await Promise.all([loadCheckinFeed(), loadMembers()]);
+  } catch (err) {
+    showToast(err.message || 'No se pudo registrar el check-in', 'error');
+  }
+}
+
+async function showCheckinConfirm(status = 'active', name, initials, plan, color, checkinType = 'Acceso libre') {
+  if (!name && state.selectedMemberId) {
+    const member = state.members.find((item) => item.id === state.selectedMemberId);
+    if (member) {
+      await performCheckin(member, checkinType);
+    }
+    return;
+  }
+
+  const meta = STATUS_META[status] || STATUS_META.active;
+  document.getElementById('cm-avatar').textContent = initials || getInitials(name || 'Socio');
+  document.getElementById('cm-avatar').style.background = color || meta.color;
+  document.getElementById('cm-name').textContent = name || 'Socio';
+  document.getElementById('cm-plan').textContent = `Plan ${plan || 'Sin plan'} · ${checkinType}`;
+  document.getElementById('cm-status').className = `cm-status ${meta.className}`;
+  document.getElementById('cm-status').textContent = `${meta.className === 'ok' ? '✓' : meta.className === 'warn' ? '⚠' : '✕'} ${meta.text}`;
+  document.getElementById('cm-time').textContent = `Hoy ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`;
+
+  const icon = document.getElementById('cm-icon');
+  if (meta.className === 'ok') {
+    icon.className = 'cm-icon success';
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
+  } else if (meta.className === 'warn') {
+    icon.className = 'cm-icon warning';
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+  } else {
+    icon.className = 'cm-icon error';
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>';
+  }
+
+  document.getElementById('checkin-modal-overlay').classList.add('active');
+  showToast(`Check-in procesado — ${name}`, meta.className === 'ok' ? 'success' : meta.className === 'warn' ? 'warning' : 'error');
+}
+
+function closeCheckinModal() {
+  document.getElementById('checkin-modal-overlay').classList.remove('active');
+}
+
+async function quickCheckin(className) {
+  const query = document.getElementById('checkin-input').value.trim();
+  const member =
+    state.members.find((item) => item.id === state.selectedMemberId) ||
+    state.members.find((item) => item.fullName.toLowerCase() === query.toLowerCase()) ||
+    state.members.find((item) => (item.documentNumber || '') === query.replace(/\D/g, ''));
+
+  if (!member) {
+    showToast('Seleccioná o buscá un socio antes de registrar una clase', 'warning');
+    return;
+  }
+  await performCheckin(member, className);
+}
+
+function createMemberFromPrompt() {
+  openMemberFormModal('create');
+}
+
+async function logout() {
+  if (!state.token) return;
+  try {
+    await apiFetch('/auth/logout', { method: 'POST' });
+  } catch {
+    // no-op
+  }
+  clearSession();
+  showLoginScreen();
+}
+
+function promoteFromWaitlist(memberName = 'el socio') {
+  showToast(`${memberName} fue promovido desde lista de espera`, 'success');
+}
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+function getBadge(status) {
+  return STATUS_META[status] || STATUS_META.none;
+}
+
+function memberColor(status) {
+  return (STATUS_META[status] || STATUS_META.none).color;
+}
+
+function getInitials(name) {
+  return (name || 'NA')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('');
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(value || 0));
+}
+
+function formatCompactCurrency(value) {
+  const number = Number(value || 0);
+  if (number >= 1000000) return `$${(number / 1000000).toFixed(2)}M`;
+  if (number >= 1000) return `$${(number / 1000).toFixed(1)}K`;
+  return formatCurrency(number);
+}
+
+function formatInteger(value) {
+  return new Intl.NumberFormat('es-AR').format(Number(value || 0));
+}
+
+function formatDate(value) {
+  if (!value) return 'N/D';
+  return new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function formatRelativeDate(value) {
+  if (!value) return 'Sin ingresos';
+  const date = new Date(value);
+  const now = new Date();
+  const sameDay = date.toLocaleDateString('es-AR') === now.toLocaleDateString('es-AR');
+  if (sameDay) return `Hoy ${date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`;
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffDays === 1) return 'Ayer';
+  if (diffDays > 1) return `Hace ${diffDays} días`;
+  return formatDate(date);
+}
+
+function formatDocument(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function addDays(dateString, days) {
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + Number(days || 0));
+  return date;
+}
+
+function attendanceWidth(status) {
+  if (status === 'active') return '72%';
+  if (status === 'warning') return '44%';
+  if (status === 'frozen') return '20%';
+  if (status === 'expired') return '8%';
+  return '4%';
+}
 </script>
 </body>
 </html>

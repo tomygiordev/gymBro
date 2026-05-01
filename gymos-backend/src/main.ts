@@ -7,6 +7,9 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
+import { existsSync, readFileSync } from 'fs';
+import { resolve } from 'path';
+import { exec } from 'child_process';
 
 async function bootstrap() {
   const app = await NestFactory.create(
@@ -17,7 +20,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.setGlobalPrefix('api/v1', {
-    exclude: ['health', 'docs'],
+    exclude: ['docs'],
   });
 
   app.useGlobalPipes(
@@ -34,6 +37,18 @@ async function bootstrap() {
     origin: configService.get('CORS_ORIGINS', '*'),
     credentials: true,
   });
+
+  const fastify = app.getHttpAdapter().getInstance();
+  const frontendPath = resolve(process.cwd(), '..', 'gymos-admin-panel.html');
+  const sendFrontend = async (_request: unknown, reply: { type: (value: string) => { send: (body: string) => unknown } }) => {
+    if (!existsSync(frontendPath)) {
+      return reply.type('text/plain').send('Frontend file not found');
+    }
+    return reply.type('text/html; charset=utf-8').send(readFileSync(frontendPath, 'utf8'));
+  };
+
+  fastify.get('/', sendFrontend);
+  fastify.get('/gymos-admin-panel.html', sendFrontend);
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('GymOS API')
@@ -52,7 +67,16 @@ async function bootstrap() {
 
   const port = configService.get('PORT', 3000);
   await app.listen(port, '0.0.0.0');
+
+  const appUrl = `http://127.0.0.1:${port}`;
+  if (process.env['OPEN_BROWSER'] === 'true') {
+    setTimeout(() => {
+      exec(`cmd /c start "" "${appUrl}"`);
+    }, 600);
+  }
+
   console.log(`GymOS Backend running on port ${port}`);
+  console.log(`GymOS Admin Panel available at ${appUrl}`);
 }
 
 bootstrap();

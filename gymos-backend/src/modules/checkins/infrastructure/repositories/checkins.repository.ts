@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { eq, and, desc, sql, isNull, gte } from 'drizzle-orm';
+import { eq, and, desc, sql, gte, inArray } from 'drizzle-orm';
 import { DrizzleInstance } from '../../../../database';
 import {
   checkinsTable,
@@ -97,5 +97,29 @@ export class CheckinsRepository {
       );
 
     return Number(results[0]?.count) || 0;
+  }
+
+  async findLatestByMemberIds(memberIds: string[]): Promise<Record<string, string>> {
+    if (memberIds.length === 0) {
+      return {};
+    }
+
+    const results = await this.db
+      .select({
+        memberId: checkinsTable.memberId,
+        createdAt: checkinsTable.createdAt,
+      })
+      .from(checkinsTable)
+      .where(inArray(checkinsTable.memberId, memberIds))
+      .orderBy(desc(checkinsTable.createdAt));
+
+    const latest: Record<string, string> = {};
+    for (const item of results) {
+      if (!latest[item.memberId]) {
+        latest[item.memberId] = item.createdAt;
+      }
+    }
+
+    return latest;
   }
 }

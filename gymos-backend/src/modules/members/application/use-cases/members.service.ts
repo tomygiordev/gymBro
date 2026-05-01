@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { MembersRepository, MemberSearchResult } from '../../infrastructure/repositories/members.repository';
 import { MembershipsService } from '../../../memberships/application/use-cases/memberships.service';
+import { CheckinsRepository } from '../../../checkins/infrastructure/repositories/checkins.repository';
 import { CreateMemberDto, UpdateMemberDto, MemberListItemDto, MemberDetailDto } from '../../presentation/dtos/members.dto';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class MembersService {
   constructor(
     private readonly membersRepository: MembersRepository,
     private readonly membershipsService: MembershipsService,
+    private readonly checkinsRepository: CheckinsRepository,
   ) {}
 
   async search(tenantId: string, query: string): Promise<MemberSearchResult[]> {
@@ -49,6 +51,7 @@ export class MembersService {
       photoUrl: member.photoUrl,
       isActive: Boolean(member.isActive),
       createdAt: new Date(member.createdAt),
+      lastCheckinAt: null,
       membership: membership
         ? {
             id: membership.id,
@@ -80,6 +83,20 @@ export class MembersService {
       isActive: Boolean(m.isActive),
       createdAt: new Date(m.createdAt),
     }));
+
+    const latestCheckins = await this.checkinsRepository.findLatestByMemberIds(
+      memberList.map((member) => member.id),
+    );
+
+    for (const member of memberList) {
+      const membership = await this.membershipsService.getActiveMembership(member.id);
+      member.membershipStatus = membership?.status || 'none';
+      member.membershipPlanName = membership?.planName || null;
+      member.membershipEndDate = membership?.endDate || null;
+      member.lastCheckinAt = latestCheckins[member.id]
+        ? new Date(latestCheckins[member.id])
+        : null;
+    }
 
     return { members: memberList, nextCursor };
   }

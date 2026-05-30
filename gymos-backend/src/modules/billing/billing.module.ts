@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { BillingController } from './presentation/controllers/billing.controller';
 import { BillingService } from './application/use-cases/billing.service';
 import { InvoicesRepository } from './infrastructure/repositories/invoices.repository';

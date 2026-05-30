@@ -1,15 +1,16 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { eq, and, gt, isNull, sql } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { eq, and, gt, isNull } from 'drizzle-orm';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import { UsersRepository } from '../../infrastructure/repositories/users.repository';
 import { SessionsRepository } from '../../infrastructure/repositories/sessions.repository';
 import { StaffProfilesRepository } from '../../infrastructure/repositories/staff-profiles.repository';
 import { PasswordService } from '../../infrastructure/services/password.service';
 import { TokenService } from '../../infrastructure/services/token.service';
 import { AuditService } from '../../../audit/application/use-cases/audit.service';
-import { passwordResetTokensTable } from '../../../../database/schema';
+import { passwordResetTokensTable, User } from '../../../../database/schema';
 import { LoginDto, AuthResponseDto } from '../../presentation/dtos/auth.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -40,42 +41,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const staffProfile = await this.staffProfilesRepository.findByUserId(user.id);
-    const tenantId = staffProfile?.tenantId || 'default';
-    const branchId = staffProfile?.id;
-
-    const accessToken = this.tokenService.generateAccessToken({
-      sub: user.id,
-      email: user.email,
-      tenantId,
-      branchId,
-      role: 'staff',
-    });
-
-    const { token: refreshToken, hash: refreshTokenHash } =
-      this.tokenService.generateRefreshToken(user.id);
-
-    const refreshTtl = this.configService.get('jwt.refreshTokenTtl', '7d');
-    const expiresAt = this.calculateExpiry(refreshTtl);
-
-    await this.sessionsRepository.create({
-      userId: user.id,
-      refreshTokenHash,
-      expiresAt,
-    });
-
-    await this.auditService.log({
-      action: 'auth.login',
-      entityType: 'session',
-      userId: user.id,
-    });
-
-    return {
-      accessToken,
-      refreshToken,
-      expiresIn: this.configService.get('jwt.accessTokenTtl', '15m'),
-      tokenType: 'Bearer',
-    };
+    return this.issueTokens(user, 'auth.login');
   }
 
   async refreshTokens(refreshToken: string): Promise<AuthResponseDto> {
@@ -83,6 +49,10 @@ export class AuthService {
 
     try {
       const payload = this.tokenService.verifyRefreshToken(refreshToken);
+      if (payload.type !== 'refresh') {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
       const sessions = await this.sessionsRepository.findByUserId(payload.sub);
       const session = sessions.find((s) => s.refreshTokenHash === tokenHash);
 
@@ -102,10 +72,7 @@ export class AuthService {
 
       await this.sessionsRepository.revoke(session.id);
 
-      return this.login({
-        email: user.email,
-        password: '',
-      });
+      return this.issueTokens(user, 'auth.refresh');
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -114,15 +81,17 @@ export class AuthService {
   async forgotPassword(email: string): Promise<{ message: string }> {
     const user = await this.usersRepository.findByEmail(email);
     if (user) {
-      const { token, hash, expiresAt } = this.tokenService.generatePasswordResetToken();
+      const { hash, expiresAt } = this.tokenService.generatePasswordResetToken();
       const now = new Date().toISOString();
 
       await this.db.insert(passwordResetTokensTable).values({
+        id: uuidv4(),
         userId: user.id,
         tokenHash: hash,
         expiresAt: expiresAt.toISOString(),
         createdAt: now,
       } as any);
+      persistDatabase(this.db);
 
       await this.auditService.log({
         action: 'auth.password_reset_requested',
@@ -160,6 +129,7 @@ export class AuthService {
       .update(passwordResetTokensTable)
       .set({ usedAt: new Date().toISOString() } as any)
       .where(eq(passwordResetTokensTable.id, resetToken.id));
+    persistDatabase(this.db);
 
     await this.auditService.log({
       action: 'auth.password_reset_completed',
@@ -199,6 +169,46 @@ export class AuthService {
       userId,
     });
     return { message: 'Logged out successfully' };
+  }
+
+  private async issueTokens(user: User, auditAction: string): Promise<AuthResponseDto> {
+    const staffProfile = await this.staffProfilesRepository.findByUserId(user.id);
+    const tenantId = staffProfile?.tenantId || 'default';
+    const branchId = staffProfile?.id;
+
+    const accessToken = this.tokenService.generateAccessToken({
+      sub: user.id,
+      email: user.email,
+      tenantId,
+      branchId,
+      role: 'staff',
+    });
+
+    const { token: refreshToken, hash: refreshTokenHash } =
+      this.tokenService.generateRefreshToken(user.id);
+
+    const refreshTtl = this.configService.get('jwt.refreshTokenTtl', '7d');
+    const expiresAt = this.calculateExpiry(refreshTtl);
+
+    await this.sessionsRepository.create({
+      userId: user.id,
+      refreshTokenHash,
+      expiresAt,
+    });
+
+    await this.auditService.log({
+      action: auditAction,
+      entityType: 'session',
+      userId: user.id,
+      tenantId,
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      expiresIn: this.configService.get('jwt.accessTokenTtl', '15m'),
+      tokenType: 'Bearer',
+    };
   }
 
   private calculateExpiry(ttl: string): Date {

@@ -16,7 +16,7 @@ declare module 'fastify' {
 }
 
 @Injectable()
-export class RequestIdMiddleware {
+export class RequestIdMiddleware implements NestMiddleware {
   private logger: Pino.Logger;
 
   constructor(private options: { logger: Pino.Logger; requestIdHeader: string }) {

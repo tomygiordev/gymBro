@@ -1,7 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { eq, and, isNull } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { eq, and } from 'drizzle-orm';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import { staffProfilesTable, StaffProfile } from '../../../../database/schema';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class StaffProfilesRepository {
@@ -50,8 +51,9 @@ export class StaffProfilesRepository {
     const now = new Date().toISOString();
     const result = await this.db
       .insert(staffProfilesTable)
-      .values({ ...data, createdAt: now, updatedAt: now } as any)
+      .values({ id: uuidv4(), ...data, createdAt: now, updatedAt: now } as any)
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 
@@ -69,6 +71,7 @@ export class StaffProfilesRepository {
       .set({ ...data, updatedAt: new Date().toISOString() } as any)
       .where(eq(staffProfilesTable.id, id))
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 }

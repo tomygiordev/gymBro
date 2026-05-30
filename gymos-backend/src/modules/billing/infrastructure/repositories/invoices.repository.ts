@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { eq, and, desc } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import { invoicesTable, invoiceItemsTable, Invoice, InvoiceItem } from '../../../../database/schema';
-import { generateInvoiceNumber } from '../../../../shared/utils';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class InvoicesRepository {
@@ -50,12 +50,14 @@ export class InvoicesRepository {
     const result = await this.db
       .insert(invoicesTable)
       .values({
+        id: uuidv4(),
         ...data,
         dueDate: data.dueDate.toISOString(),
         createdAt: now,
         updatedAt: now,
       } as any)
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 
@@ -64,6 +66,7 @@ export class InvoicesRepository {
       .update(invoicesTable)
       .set({ status, paidAt: paidAt?.toISOString(), updatedAt: new Date().toISOString() } as any)
       .where(eq(invoicesTable.id, id));
+    persistDatabase(this.db);
   }
 
   async addItem(data: {
@@ -75,8 +78,9 @@ export class InvoicesRepository {
   }): Promise<InvoiceItem> {
     const result = await this.db
       .insert(invoiceItemsTable)
-      .values(data as any)
+      .values({ id: uuidv4(), ...data } as any)
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 

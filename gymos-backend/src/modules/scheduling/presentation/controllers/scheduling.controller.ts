@@ -19,8 +19,8 @@ export class SchedulingController {
 
   @Post()
   @ApiOperation({ summary: 'Create a class session' })
-  async create(@Body() data: any) {
-    return this.schedulingService.createClass(data);
+  async create(@TenantId() tenantId: string, @Body() data: any) {
+    return this.schedulingService.createClass(tenantId, data);
   }
 
   @Post(':id/reservations')

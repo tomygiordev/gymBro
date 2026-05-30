@@ -1,8 +1,7 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { BillingService } from '../../application/use-cases/billing.service';
 import { JwtAuthGuard } from '../../../iam/infrastructure/guards/jwt-auth.guard';
-import { TenantId } from '../../../../common/decorators/request.decorators';
 
 @ApiTags('Billing')
 @Controller('billing')

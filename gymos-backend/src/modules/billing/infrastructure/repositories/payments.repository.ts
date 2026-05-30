@@ -1,7 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { eq, and, desc } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { eq, desc } from 'drizzle-orm';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import { paymentsTable, Payment } from '../../../../database/schema';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class PaymentsRepository {
@@ -44,8 +45,9 @@ export class PaymentsRepository {
     const now = new Date().toISOString();
     const result = await this.db
       .insert(paymentsTable)
-      .values({ ...data, createdAt: now } as any)
+      .values({ id: uuidv4(), ...data, processedAt: now, createdAt: now } as any)
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 
@@ -54,5 +56,6 @@ export class PaymentsRepository {
       .update(paymentsTable)
       .set({ status })
       .where(eq(paymentsTable.id, id));
+    persistDatabase(this.db);
   }
 }

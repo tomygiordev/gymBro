@@ -1,7 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { eq, desc } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import { auditLogsTable, AuditLog } from '../../../../database/schema';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuditLogsRepository {
@@ -20,8 +21,9 @@ export class AuditLogsRepository {
     const now = new Date().toISOString();
     const result = await this.db
       .insert(auditLogsTable)
-      .values({ ...data, id: crypto.randomUUID(), createdAt: now } as any)
+      .values({ ...data, id: uuidv4(), createdAt: now } as any)
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 

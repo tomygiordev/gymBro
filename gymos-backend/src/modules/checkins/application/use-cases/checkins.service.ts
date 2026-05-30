@@ -109,7 +109,7 @@ export class CheckinsService {
 
       case MEMBERSHIP_STATUS.EXPIRED:
       case MEMBERSHIP_STATUS.FROZEN:
-      default:
+      default: {
         const deniedReason = membership.status === MEMBERSHIP_STATUS.FROZEN
           ? 'La membresía está congelada'
           : `La membresía venció el ${membership.endDate.toLocaleDateString('es-AR')}`;
@@ -134,6 +134,7 @@ export class CheckinsService {
           reason: deniedReason,
           timestamp: new Date(),
         };
+      }
     }
 
     const checkin = await this.checkinsRepository.createCheckin({

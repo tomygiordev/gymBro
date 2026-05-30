@@ -21,6 +21,19 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/database/seeds/seed.ts"
   },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "testEnvironment": "node"
+  },
   "dependencies": {
     "@fastify/static": "^7.0.4",
     "@nestjs/common": "^10.3.0",

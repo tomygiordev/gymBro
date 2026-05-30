@@ -1,7 +1,8 @@
 import initSqlJs from 'sql.js';
 import * as fs from 'fs';
+import * as path from 'path';
 
-const dbPath = './data/gymos.db';
+const dbPath = process.env['DATABASE_URL'] || './data/gymos.db';
 
 async function setup() {
   console.log('Setting up SQLite database...');
@@ -10,9 +11,8 @@ async function setup() {
   let db;
 
   try {
-    const fs = require('fs');
-    const dbDir = dbPath.substring(0, dbPath.lastIndexOf('/') || dbPath.lastIndexOf('\\'));
-    if (dbDir && !fs.existsSync(dbDir)) {
+    const dbDir = path.dirname(dbPath);
+    if (dbDir && dbDir !== '.' && !fs.existsSync(dbDir)) {
       fs.mkdirSync(dbDir, { recursive: true });
     }
     if (fs.existsSync(dbPath)) {

@@ -681,10 +681,22 @@
           <select class="filter-select" id="filter-plan"><option>Todos los planes</option><option>Básico</option><option>Premium</option><option>VIP</option></select>
           <select class="filter-select" id="filter-status"><option>Todos los estados</option><option>Activa</option><option>Por vencer</option><option>Vencida</option><option>Congelada</option></select>
           <select class="filter-select" id="filter-branch"><option>Todas las sucursales</option><option>Centro</option><option>Norte</option><option>Sur</option></select>
+          <button class="btn btn-ghost btn-sm" id="clear-filters-btn">Limpiar</button>
         </div>
+        <div class="filter-chips" id="filter-chips"></div>
         <div class="members-layout">
-          <div class="members-table-wrap">
-            <table class="members-table"><thead><tr><th><input type="checkbox" class="table-checkbox" /></th><th>Socio</th><th>Documento</th><th>Plan</th><th>Estado</th><th>Última visita</th><th></th></tr></thead><tbody id="members-tbody"></tbody></table>
+          <div class="members-table-wrap" id="members-table">
+            <table class="members-table"><thead><tr><th><input type="checkbox" class="table-checkbox" id="members-select-all" /></th><th>Socio</th><th>Documento</th><th>Plan</th><th>Estado</th><th>Última visita</th><th></th></tr></thead><tbody id="members-tbody"></tbody></table>
+          </div>
+          <div id="members-skeleton" style="display:none">
+            <div class="skeleton" style="height:48px;margin-bottom:8px"></div>
+            <div class="skeleton" style="height:48px;margin-bottom:8px"></div>
+            <div class="skeleton" style="height:48px"></div>
+          </div>
+          <div class="empty-state" id="members-empty" style="display:none">
+            <div class="empty-title">No encontramos socios</div>
+            <p class="empty-sub">Probá ajustar la búsqueda o limpiar filtros.</p>
+            <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Limpiar filtros</button>
           </div>
           <div class="quick-panel">
             <div class="qp-header">
@@ -709,8 +721,8 @@
               <div class="qp-row"><label>Hace 4 días</label><span>Yoga</span></div>
             </div>
             <div class="qp-actions">
-              <button class="btn btn-primary btn-sm" style="flex:1" onclick="showCheckinConfirm('active')">Check-in</button>
-              <button class="btn btn-secondary btn-sm" style="flex:1" onclick="openMemberProfile()">Ver perfil</button>
+              <button class="btn btn-primary btn-sm" style="flex:1" id="qp-checkin-btn">Check-in</button>
+              <button class="btn btn-secondary btn-sm" style="flex:1" id="qp-profile-btn">Ver perfil</button>
             </div>
           </div>
         </div>
@@ -1266,37 +1278,41 @@ const state = {
   checkinAutoCloseTimer: null,
 };
 
-document.getElementById('login-btn').addEventListener('click', login);
-document.getElementById('member-search').addEventListener('input', debounce(renderMembers, 150));
-document.getElementById('filter-plan').addEventListener('change', () => { persistFilters(); renderMembers(); });
-document.getElementById('filter-status').addEventListener('change', () => { persistFilters(); renderMembers(); });
-document.getElementById('filter-branch').addEventListener('change', () => { persistFilters(); renderMembers(); });
-document.getElementById('new-member-btn').addEventListener('click', () => openMemberFormModal('create'));
-document.getElementById('sidebar-user-row').addEventListener('click', confirmLogout);
-document.getElementById('wizard-member-search').addEventListener('input', renderWizardMembers);
-document.getElementById('topbar-member-search').addEventListener('click', jumpToMemberSearch);
-document.getElementById('members-export-btn').addEventListener('click', exportMembersCsv);
-document.getElementById('dashboard-view-all-btn').addEventListener('click', () => showScreen('checkin'));
-document.getElementById('alert-debtors').addEventListener('click', () => openCommunicationModal({ template: 'debt', recipients: getMembersByStatus(['expired', 'warning']) }));
-document.getElementById('alert-renewals').addEventListener('click', () => { showScreen('members'); document.getElementById('filter-status').value = 'Por vencer'; renderMembers(); });
-document.getElementById('alert-birthdays').addEventListener('click', () => openCommunicationModal({ template: 'birthday', recipients: state.members.slice(0, 3) }));
-document.getElementById('reports-export-btn').addEventListener('click', exportReportsCsv);
-document.getElementById('new-communication-btn').addEventListener('click', () => openCommunicationModal());
-document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
-document.getElementById('edit-member-btn').addEventListener('click', () => openMemberFormModal('edit', state.selectedMemberId));
-document.getElementById('member-form-submit-btn').addEventListener('click', submitMemberForm);
-document.getElementById('communication-member-select').addEventListener('change', addCommunicationRecipientFromSelect);
-document.getElementById('communication-send-btn').addEventListener('click', sendCommunication);
-document.getElementById('edit-class-btn').addEventListener('click', openClassEditorModal);
-document.getElementById('class-add-member-btn').addEventListener('click', addSelectedMemberToClass);
-document.getElementById('class-editor-save-btn').addEventListener('click', saveClassEditor);
-document.getElementById('qp-checkin-btn').addEventListener('click', () => showCheckinConfirm());
-document.getElementById('qp-profile-btn').addEventListener('click', () => openMemberProfile());
-document.getElementById('new-membership-btn').addEventListener('click', showWizard);
-document.getElementById('members-select-all').addEventListener('change', function() {
+function bind(id, event, handler) {
+  document.getElementById(id)?.addEventListener(event, handler);
+}
+
+bind('login-btn', 'click', login);
+bind('member-search', 'input', debounce(renderMembers, 150));
+bind('filter-plan', 'change', () => { persistFilters(); renderMembers(); });
+bind('filter-status', 'change', () => { persistFilters(); renderMembers(); });
+bind('filter-branch', 'change', () => { persistFilters(); renderMembers(); });
+bind('new-member-btn', 'click', () => openMemberFormModal('create'));
+bind('sidebar-user-row', 'click', confirmLogout);
+bind('wizard-member-search', 'input', renderWizardMembers);
+bind('topbar-member-search', 'click', jumpToMemberSearch);
+bind('members-export-btn', 'click', exportMembersCsv);
+bind('dashboard-view-all-btn', 'click', () => showScreen('checkin'));
+bind('alert-debtors', 'click', () => openCommunicationModal({ template: 'debt', recipients: getMembersByStatus(['expired', 'warning']) }));
+bind('alert-renewals', 'click', () => { showScreen('members'); document.getElementById('filter-status').value = 'Por vencer'; renderMembers(); });
+bind('alert-birthdays', 'click', () => openCommunicationModal({ template: 'birthday', recipients: state.members.slice(0, 3) }));
+bind('reports-export-btn', 'click', exportReportsCsv);
+bind('new-communication-btn', 'click', () => openCommunicationModal());
+bind('save-settings-btn', 'click', saveSettings);
+bind('edit-member-btn', 'click', () => openMemberFormModal('edit', state.selectedMemberId));
+bind('member-form-submit-btn', 'click', submitMemberForm);
+bind('communication-member-select', 'change', addCommunicationRecipientFromSelect);
+bind('communication-send-btn', 'click', sendCommunication);
+bind('edit-class-btn', 'click', openClassEditorModal);
+bind('class-add-member-btn', 'click', addSelectedMemberToClass);
+bind('class-editor-save-btn', 'click', saveClassEditor);
+bind('qp-checkin-btn', 'click', () => showCheckinConfirm());
+bind('qp-profile-btn', 'click', () => openMemberProfile());
+bind('new-membership-btn', 'click', showWizard);
+bind('members-select-all', 'change', function() {
   document.querySelectorAll('.table-checkbox:not(#members-select-all)').forEach(cb => cb.checked = this.checked);
 });
-document.getElementById('clear-filters-btn').addEventListener('click', clearFilters);
+bind('clear-filters-btn', 'click', clearFilters);
 
 document.querySelectorAll('.nav-item[data-screen]').forEach((item) => {
   item.addEventListener('click', () => showScreen(item.dataset.screen));

@@ -23,9 +23,15 @@ export class TokenService {
   }
 
   generateRefreshToken(userId: string): { token: string; hash: string } {
-    const rawToken = uuidv4();
-    const hash = createHash('sha256').update(rawToken).digest('hex');
-    return { token: rawToken, hash };
+    const token = this.jwtService.sign(
+      { sub: userId, type: 'refresh', jti: uuidv4() },
+      {
+        secret: this.configService.get('jwt.secret'),
+        expiresIn: this.configService.get('jwt.refreshTokenTtl', '7d'),
+      },
+    );
+    const hash = createHash('sha256').update(token).digest('hex');
+    return { token, hash };
   }
 
   verifyAccessToken(token: string): AuthPayload {

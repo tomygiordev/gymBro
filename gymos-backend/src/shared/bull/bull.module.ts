@@ -2,7 +2,7 @@ import { Module, Global } from '@nestjs/common';
 
 class NoOpQueue<T = unknown> {
   constructor(private readonly name: string) {}
-  async add(jobName: string, data: T, options?: unknown): Promise<{ id: string }> {
+  async add(_jobName: string, _data: T, _options?: unknown): Promise<{ id: string }> {
     return { id: `${this.name}-${Date.now()}` };
   }
   async getJob(): Promise<null> {

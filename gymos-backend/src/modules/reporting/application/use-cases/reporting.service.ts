@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ReportingService {
-  async getDashboard(tenantId: string) {
+  async getDashboard(_tenantId: string) {
     return {
       revenue: { current: 4230000, previous: 3760000, change: 12.4 },
       activeMembers: { current: 2840, newThisWeek: 38 },
@@ -12,7 +12,7 @@ export class ReportingService {
     };
   }
 
-  async getMembersStats(tenantId: string) {
+  async getMembersStats(_tenantId: string) {
     return { total: 2840, active: 2650, expired: 150, frozen: 40 };
   }
 }

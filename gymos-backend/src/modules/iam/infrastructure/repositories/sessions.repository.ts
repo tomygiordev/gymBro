@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { eq, and, gt, isNull } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { eq, and, isNull } from 'drizzle-orm';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import { sessionsTable, Session } from '../../../../database/schema';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -25,6 +25,7 @@ export class SessionsRepository {
         expiresAt: data.expiresAt.toISOString(),
       } as any)
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 
@@ -54,6 +55,7 @@ export class SessionsRepository {
       .update(sessionsTable)
       .set({ revokedAt: new Date().toISOString() } as any)
       .where(eq(sessionsTable.id, sessionId));
+    persistDatabase(this.db);
   }
 
   async revokeAllForUser(userId: string): Promise<void> {
@@ -61,11 +63,13 @@ export class SessionsRepository {
       .update(sessionsTable)
       .set({ revokedAt: new Date().toISOString() } as any)
       .where(eq(sessionsTable.userId, userId));
+    persistDatabase(this.db);
   }
 
   async deleteExpired(): Promise<void> {
     await this.db
       .delete(sessionsTable)
       .where(eq(sessionsTable.revokedAt, new Date().toISOString()));
+    persistDatabase(this.db);
   }
 }

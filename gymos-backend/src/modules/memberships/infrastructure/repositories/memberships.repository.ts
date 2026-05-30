@@ -1,16 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import {
   membershipsTable,
-  membershipChangesTable,
   membershipFreezesTable,
   plansTable,
-  membersTable,
   Membership,
 } from '../../../../database/schema';
-import { MEMBERSHIP_STATUS, MEMBERSHIP_CHANGE_TYPES, MEMBERSHIP_WARNING_DAYS } from '../../../../shared/constants';
+import { MEMBERSHIP_STATUS, MEMBERSHIP_WARNING_DAYS } from '../../../../shared/constants';
 import { addDays, isWithinDays, isDateExpired } from '../../../../shared/utils';
+import { v4 as uuidv4 } from 'uuid';
 
 interface MembershipWithPlan {
   id: string;
@@ -130,6 +129,7 @@ export class MembershipsRepository {
     const result = await this.db
       .insert(membershipsTable)
       .values({
+        id: uuidv4(),
         ...data,
         status: MEMBERSHIP_STATUS.ACTIVE,
         startDate: data.startDate.toISOString(),
@@ -139,6 +139,7 @@ export class MembershipsRepository {
         updatedAt: now,
       } as any)
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 
@@ -147,9 +148,15 @@ export class MembershipsRepository {
       .update(membershipsTable)
       .set({ status, updatedAt: new Date().toISOString() } as any)
       .where(eq(membershipsTable.id, id));
+    persistDatabase(this.db);
   }
 
   async freeze(id: string, frozeUntil: Date, originalEndDate: Date): Promise<void> {
+    const membership = await this.findById(id);
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
+    }
+
     const now = new Date().toISOString();
     await this.db
       .update(membershipsTable)
@@ -162,12 +169,15 @@ export class MembershipsRepository {
       .where(eq(membershipsTable.id, id));
 
     await this.db.insert(membershipFreezesTable).values({
+      id: uuidv4(),
       membershipId: id,
-      tenantId: '',
+      tenantId: membership.tenantId,
       startedAt: now,
       endsAt: frozeUntil.toISOString(),
       originalEndDate: originalEndDate.toISOString(),
+      createdAt: now,
     } as any);
+    persistDatabase(this.db);
   }
 
   async unfreeze(id: string): Promise<void> {
@@ -206,6 +216,7 @@ export class MembershipsRepository {
         updatedAt: now,
       } as any)
       .where(eq(membershipsTable.id, id));
+    persistDatabase(this.db);
   }
 
   async renew(id: string, newEndDate: Date): Promise<Membership> {
@@ -219,6 +230,7 @@ export class MembershipsRepository {
       } as any)
       .where(eq(membershipsTable.id, id))
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 

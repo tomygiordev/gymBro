@@ -1,12 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { eq, and, desc, sql, gte, inArray } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import {
   checkinsTable,
   checkinAttemptsTable,
   membersTable,
 } from '../../../../database/schema';
-import { CheckinFeedResponseDto, CheckinFeedItemDto } from '../../presentation/dtos/checkins.dto';
+import { CheckinFeedItemDto } from '../../presentation/dtos/checkins.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class CheckinsRepository {
@@ -21,10 +22,12 @@ export class CheckinsRepository {
     classSessionId?: string;
   }): Promise<{ id: string }> {
     const now = new Date().toISOString();
+    const id = uuidv4();
     const result = await this.db
       .insert(checkinsTable)
-      .values({ ...data, createdAt: now } as any)
+      .values({ id, ...data, createdAt: now } as any)
       .returning({ id: checkinsTable.id });
+    persistDatabase(this.db);
     return result[0];
   }
 
@@ -37,10 +40,12 @@ export class CheckinsRepository {
     idempotencyKey?: string;
   }): Promise<{ id: string }> {
     const now = new Date().toISOString();
+    const id = uuidv4();
     const result = await this.db
       .insert(checkinAttemptsTable)
-      .values({ ...data, createdAt: now } as any)
+      .values({ id, ...data, createdAt: now } as any)
       .returning({ id: checkinAttemptsTable.id });
+    persistDatabase(this.db);
     return result[0];
   }
 

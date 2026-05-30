@@ -1,8 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { eq, and, or, ilike, isNull, desc } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { eq, and, or, like, isNull, desc, sql } from 'drizzle-orm';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import { membersTable, Member } from '../../../../database/schema';
 import { normalizePhone, normalizeDocumentNumber } from '../../../../shared/utils';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface MemberSearchResult {
   id: string;
@@ -55,6 +56,19 @@ export class MembersRepository {
     const normalizedQuery = query.trim().toLowerCase();
     const phoneNormalized = normalizePhone(query);
     const docNormalized = normalizeDocumentNumber(query);
+    const searchConditions = [
+      like(membersTable.firstName, `%${normalizedQuery}%`),
+      like(membersTable.lastName, `%${normalizedQuery}%`),
+      like(membersTable.email, `%${normalizedQuery}%`),
+    ];
+
+    if (docNormalized) {
+      searchConditions.push(like(membersTable.documentNumber, `%${docNormalized}%`));
+    }
+
+    if (phoneNormalized) {
+      searchConditions.push(like(membersTable.phoneNormalized, `%${phoneNormalized}%`));
+    }
 
     const results = await this.db
       .select({
@@ -70,12 +84,7 @@ export class MembersRepository {
         and(
           eq(membersTable.tenantId, tenantId),
           isNull(membersTable.deletedAt),
-          or(
-            ilike(membersTable.firstName, `%${normalizedQuery}%`),
-            ilike(membersTable.lastName, `%${normalizedQuery}%`),
-            ilike(membersTable.documentNumber, `%${docNormalized}%`),
-            eq(membersTable.phoneNormalized, phoneNormalized),
-          ),
+          or(...searchConditions),
         ),
       )
       .limit(limit);
@@ -112,6 +121,7 @@ export class MembersRepository {
     const result = await this.db
       .insert(membersTable)
       .values({
+        id: uuidv4(),
         ...data,
         phoneNormalized,
         dateOfBirth: data.dateOfBirth?.toISOString(),
@@ -119,6 +129,7 @@ export class MembersRepository {
         updatedAt: now,
       } as any)
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 
@@ -149,6 +160,7 @@ export class MembersRepository {
       .set({ ...updateData, updatedAt: new Date().toISOString() } as any)
       .where(eq(membersTable.id, id))
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 
@@ -157,13 +169,14 @@ export class MembersRepository {
       .update(membersTable)
       .set({ deletedAt: new Date().toISOString(), isActive: 0 } as any)
       .where(eq(membersTable.id, id));
+    persistDatabase(this.db);
   }
 
   async countByTenant(tenantId: string): Promise<number> {
     const result = await this.db
-      .select({ count: membersTable.id })
+      .select({ count: sql<number>`count(*)` })
       .from(membersTable)
       .where(and(eq(membersTable.tenantId, tenantId), isNull(membersTable.deletedAt)));
-    return result.length;
+    return Number(result[0]?.count) || 0;
   }
 }

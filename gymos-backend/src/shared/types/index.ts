@@ -17,6 +17,7 @@ export interface AuthPayload {
 export interface RefreshTokenPayload {
   sub: string;
   type: 'refresh';
+  jti?: string;
   iat: number;
   exp: number;
 }

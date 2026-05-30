@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { MembershipsRepository } from '../../infrastructure/repositories/memberships.repository';
 import { PlansRepository } from '../../infrastructure/repositories/plans.repository';
-import { MEMBERSHIP_STATUS, MEMBERSHIP_CHANGE_TYPES } from '../../../../shared/constants';
+import { MEMBERSHIP_STATUS } from '../../../../shared/constants';
 import { addDays } from '../../../../shared/utils';
 import {
   CreateMembershipDto,

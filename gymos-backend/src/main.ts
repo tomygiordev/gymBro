@@ -10,6 +10,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { exec } from 'child_process';
+import { v4 as uuidv4 } from 'uuid';
 
 async function bootstrap() {
   const app = await NestFactory.create(
@@ -39,6 +40,17 @@ async function bootstrap() {
   });
 
   const fastify = app.getHttpAdapter().getInstance();
+  fastify.addHook('onRequest', (request, reply, done) => {
+    const incomingRequestId = request.headers['x-request-id'];
+    const requestId = Array.isArray(incomingRequestId)
+      ? incomingRequestId[0]
+      : incomingRequestId || uuidv4();
+
+    request.requestId = requestId;
+    reply.header('x-request-id', requestId);
+    done();
+  });
+
   const frontendPath = resolve(process.cwd(), '..', 'gymos-admin-panel.html');
   const sendFrontend = async (_request: unknown, reply: { type: (value: string) => { send: (body: string) => unknown } }) => {
     if (!existsSync(frontendPath)) {

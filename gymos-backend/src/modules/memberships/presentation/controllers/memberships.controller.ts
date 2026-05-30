@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Param, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { MembershipsService } from '../../application/use-cases/memberships.service';
 import { CreateMembershipDto, RenewMembershipDto, FreezeMembershipDto, PlanDto } from '../dtos/memberships.dto';

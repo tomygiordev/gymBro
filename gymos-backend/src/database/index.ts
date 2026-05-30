@@ -1,7 +1,7 @@
 import * as schema from './schema';
-import { DrizzleInstance } from './database.module';
 
 export * from './schema';
-export { DrizzleInstance };
+export type { DrizzleInstance } from './database.module';
+export { persistDatabase } from './database.module';
 
 export const getDatabaseSchema = () => schema;

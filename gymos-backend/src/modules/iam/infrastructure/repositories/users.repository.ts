@@ -1,8 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import { DrizzleInstance } from '../../../../database';
+import { DrizzleInstance, persistDatabase } from '../../../../database';
 import { usersTable, User } from '../../../../database/schema';
 import { PasswordService } from '../services/password.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UsersRepository {
@@ -38,12 +39,14 @@ export class UsersRepository {
     const result = await this.db
       .insert(usersTable)
       .values({
+        id: uuidv4(),
         email: data.email.toLowerCase(),
         passwordHash,
         createdAt: now,
         updatedAt: now,
       } as any)
       .returning();
+    persistDatabase(this.db);
     return result[0];
   }
 
@@ -53,6 +56,7 @@ export class UsersRepository {
       .update(usersTable)
       .set({ passwordHash: hash, updatedAt: new Date().toISOString() } as any)
       .where(eq(usersTable.id, userId));
+    persistDatabase(this.db);
   }
 
   async delete(userId: string): Promise<void> {
@@ -60,5 +64,6 @@ export class UsersRepository {
       .update(usersTable)
       .set({ deletedAt: new Date().toISOString(), isActive: 0 } as any)
       .where(eq(usersTable.id, userId));
+    persistDatabase(this.db);
   }
 }

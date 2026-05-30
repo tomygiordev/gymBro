@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { BranchesRepository } from '../../infrastructure/repositories/branches.repository';
-import { TenantId } from '../../../../common/decorators/request.decorators';
 
 @Injectable()
 export class BranchesService {
